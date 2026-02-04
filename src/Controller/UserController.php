@@ -31,7 +31,7 @@ final class UserController extends AbstractController
         $data = json_decode($request->getContent(), true);
 
         if (!$data || !isset($data['email'], $data['password'], $data['phone'])) {
-            return $this->json(['error' => 'Dados incompletos'], 400);
+            return $this->json(['error' => 'INVALID_INPUT_DATA'], 400);
         }
 
         try {
