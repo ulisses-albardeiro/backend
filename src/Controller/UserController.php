@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Service\UserService;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -21,5 +23,22 @@ final class UserController extends AbstractController
             'email' => $user->getUserIdentifier(),
             'roles' => $user->getRoles(),
         ]);
+    }
+
+    #[Route('api/register', name: 'app_register', methods: ['POST'])]
+    public function register(Request $request, UserService $userService): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (!$data || !isset($data['email'], $data['password'], $data['phone'])) {
+            return $this->json(['error' => 'Dados incompletos'], 400);
+        }
+
+        try {
+            $user = $userService->create($data);
+            return $this->json(['message' => 'Sucesso!'], 201);
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], 409);
+        }
     }
 }
