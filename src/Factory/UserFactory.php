@@ -3,8 +3,8 @@
 namespace App\Factory;
 
 use App\Entity\User;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
  * @extends PersistentObjectFactory<User>
@@ -36,6 +36,7 @@ final class UserFactory extends PersistentObjectFactory
             'email' => 'teste@teste.com',
             'password' => 123,
             'roles' => ['ROLE_USER'],
+            'phone' => '19971553715',
         ];
     }
 
