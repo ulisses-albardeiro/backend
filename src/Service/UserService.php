@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use Exception;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,7 +20,7 @@ class UserService
         $existingUser = $this->userRepository->findOneBy(['email' => $data['email']]);
 
         if ($existingUser) {
-            throw new Exception("Este e-mail já está em uso.");
+            throw new \InvalidArgumentException("EMAIL_ALREADY_EXISTS");
         }
 
         $user = new User();

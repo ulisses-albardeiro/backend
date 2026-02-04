@@ -36,9 +36,15 @@ final class UserController extends AbstractController
 
         try {
             $user = $userService->create($data);
-            return $this->json(['message' => 'Sucesso!'], 201);
+            return $this->json(['message' => 'USER_CREATED_SUCCESS'], 201);
+        } catch (\InvalidArgumentException $e) {
+            return $this->json([
+                'error' => $e->getMessage()
+            ], 400);
         } catch (\Exception $e) {
-            return $this->json(['error' => $e->getMessage()], 409);
+            return $this->json([
+                'error' => 'INTERNAL_SERVER_ERROR'
+            ], 500);
         }
     }
 }
