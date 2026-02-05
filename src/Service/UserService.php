@@ -23,7 +23,12 @@ class UserService
             throw new \InvalidArgumentException("EMAIL_ALREADY_EXISTS");
         }
 
+        if (strlen($data['name']) > 255) {
+            throw new \InvalidArgumentException("NAME_TOO_LONG");
+        }
+
         $user = new User();
+        $user->setName($data['name']);
         $user->setEmail($data['email']);
         $user->setPhone($data['phone']);
 
