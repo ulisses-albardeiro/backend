@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Service\PasswordResetRequestService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -53,5 +54,26 @@ final class PasswordResetController extends AbstractController
         } catch (\Exception $e) {
             return $this->json(['error' => 'INTERNAL_SERVER_ERROR'], 500);
         }
+    }
+
+    #[Route('/reset', name: 'confirm', methods: ['POST'])]
+    public function reset(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $email = $data['email'] ?? null;
+        $code = $data['code'] ?? null;
+        $newPassword = $data['password'] ?? null;
+
+        if (!$email || !$code || !$newPassword) {
+            return $this->json(['error' => 'MISSING_DATA'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $success = $this->resetService->resetPassword($email, $code, $newPassword);
+
+        if (!$success) {
+            return $this->json(['error' => 'FAILED_TO_RESET_PASSWORD'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        return $this->json(['message' => 'PASSWORD_UPDATED_SUCCESS']);
     }
 }

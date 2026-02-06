@@ -9,6 +9,7 @@ use App\Entity\PasswordResetRequest;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use App\Repository\PasswordResetRequestRepository;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class PasswordResetRequestService
 {
@@ -18,11 +19,9 @@ class PasswordResetRequestService
         private UserRepository $userRepository,
         private EntityManagerInterface $entityManager,
         private PasswordResetRequestRepository $repository,
+        private UserPasswordHasherInterface $passwordHasher,
     ) {}
 
-    /**
-     * Generate a new recovery request and send the email.
-     */
     public function createRequest(string $email): ?PasswordResetRequest
     {
         $user = $this->userRepository->findOneBy(['email' => $email]);
@@ -34,8 +33,7 @@ class PasswordResetRequestService
         $this->invalidateOldRequests($user);
 
         $request = new PasswordResetRequest();
-
-        $request->setUser($user); 
+        $request->setUser($user);
         $request->setCode((string) random_int(100000, 999999));
         $request->setCreatedAt(new \DateTimeImmutable());
         $request->setExpiresAt(new \DateTimeImmutable('+15 minutes'));
@@ -49,9 +47,6 @@ class PasswordResetRequestService
         return $request;
     }
 
-    /**
-     * Checks if the submitted code is valid and has not expired.
-     */
     public function validateCode(string $email, string $code): bool
     {
         $user = $this->userRepository->findOneBy(['email' => $email]);
@@ -61,31 +56,41 @@ class PasswordResetRequestService
         }
 
         $request = $this->repository->findOneBy([
-            'requestedBy' => $user,
+            'user' => $user,
             'code' => $code,
-            'is_used' => false
+            'isUsed' => false
         ]);
 
-        if (!$request) {
-            return false;
-        }
-
-        if ($request->getExpiresAt() < new \DateTimeImmutable()) {
+        if (!$request || $request->getExpiresAt() < new \DateTimeImmutable()) {
             return false;
         }
 
         return true;
     }
 
-    /**
-     * Mark the code as used.
-     */
+    public function resetPassword(string $email, string $code, string $newPlainPassword): bool
+    {
+        $user = $this->userRepository->findOneBy(['email' => $email]);
+
+        if (!$user || !$this->validateCode($email, $code)) {
+            return false;
+        }
+
+        $hashedPassword = $this->passwordHasher->hashPassword($user, $newPlainPassword);
+        $user->setPassword($hashedPassword);
+
+        $this->markAsUsed($email, $code);
+
+        return true;
+    }
+
     public function markAsUsed(string $email, string $code): void
     {
         $user = $this->userRepository->findOneBy(['email' => $email]);
         $request = $this->repository->findOneBy([
-            'requestedBy' => $user,
-            'code' => $code
+            'user' => $user,
+            'code' => $code,
+            'isUsed' => false
         ]);
 
         if ($request) {
@@ -108,8 +113,8 @@ class PasswordResetRequestService
     private function invalidateOldRequests(User $user): void
     {
         $oldRequests = $this->repository->findBy([
-            'requestedBy' => $user, 
-            'is_used' => false
+            'user' => $user,
+            'isUsed' => false
         ]);
 
         foreach ($oldRequests as $old) {

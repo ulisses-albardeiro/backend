@@ -33,10 +33,11 @@ final class UserFactory extends PersistentObjectFactory
     protected function defaults(): array|callable
     {
         return [
-            'email' => 'teste@teste.com',
+            'email' => 'ualbardeiro@gmail.com',
             'password' => 123,
             'roles' => ['ROLE_USER'],
             'phone' => '19971553715',
+            'name' => 'Ulisses',
         ];
     }
 
