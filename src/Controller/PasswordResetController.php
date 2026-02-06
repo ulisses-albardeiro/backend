@@ -23,7 +23,7 @@ final class PasswordResetController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        if (!$data || !isset($data['email'])) {
+        if (!$data || !isset($data['email']) || $data['email'] == '') {
             return $this->json(['error' => 'EMAIL_REQUIRED'], 400);
         }
 
