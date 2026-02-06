@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Service\PasswordResetRequestService;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +14,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 final class PasswordResetController extends AbstractController
 {
     public function __construct(
-        private PasswordResetRequestService $resetService
+        private LoggerInterface $logger,
+        private PasswordResetRequestService $resetService,
     ) {}
 
     #[Route('/request', name: 'request', methods: ['POST'])]
@@ -30,6 +32,11 @@ final class PasswordResetController extends AbstractController
 
             return $this->json(['message' => 'RESET_CODE_SENT_IF_EMAIL_EXISTS'], 200);
         } catch (\Exception $e) {
+            $this->logger->error('Password reset failed.', [
+                'email' => $data['email'],
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return $this->json(['error' => 'INTERNAL_SERVER_ERROR'], 500);
         }
     }
@@ -52,6 +59,11 @@ final class PasswordResetController extends AbstractController
 
             return $this->json(['message' => 'CODE_VALIDATED_SUCCESS'], 200);
         } catch (\Exception $e) {
+            $this->logger->error('Password reset failed.', [
+                'email' => $data['email'],
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return $this->json(['error' => 'INTERNAL_SERVER_ERROR'], 500);
         }
     }

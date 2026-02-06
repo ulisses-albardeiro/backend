@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Service\UserService;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -11,6 +12,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 final class UserController extends AbstractController
 {
+    public function __construct(
+        private LoggerInterface $logger,
+    ) {}
+
     #[Route('api/me', name: 'app_me')]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function index(): JsonResponse
@@ -42,6 +47,13 @@ final class UserController extends AbstractController
                 'error' => $e->getMessage()
             ], 400);
         } catch (\Exception $e) {
+            $this->logger->error('User registration error.', [
+                'email' => $data['email'],
+                'phone' => $data['phone'],
+                'name' => $data['name'],
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return $this->json([
                 'error' => 'INTERNAL_SERVER_ERROR'
             ], 500);
