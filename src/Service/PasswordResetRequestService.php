@@ -3,10 +3,10 @@
 namespace App\Service;
 
 use App\Entity\User;
-use Symfony\Component\Mime\Email;
 use App\Repository\UserRepository;
 use App\Entity\PasswordResetRequest;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use App\Repository\PasswordResetRequestRepository;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -101,11 +101,14 @@ class PasswordResetRequestService
 
     private function sendEmail(string $to, string $code): void
     {
-        $email = (new Email())
+        $email = new TemplatedEmail()
             ->from($this->mailerFrom)
             ->to($to)
             ->subject('Seu código de recuperação')
-            ->html("<p>Seu código de recuperação é: <strong>$code</strong>. Ele expira em 15 minutos.</p>");
+            ->htmlTemplate('email/password_reset.html.twig')
+            ->context([
+            'code' => $code,
+        ]);
 
         $this->mailer->send($email);
     }
