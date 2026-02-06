@@ -46,6 +46,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: PasswordResetRequest::class, mappedBy: 'user')]
     private Collection $passwordResetRequests;
 
+    #[ORM\OneToOne(mappedBy: 'owner', cascade: ['persist', 'remove'])]
+    private ?Company $company = null;
+
     public function __construct()
     {
         $this->passwordResetRequests = new ArrayCollection();
@@ -176,6 +179,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $passwordResetRequest->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCompany(): ?Company
+    {
+        return $this->company;
+    }
+
+    public function setCompany(Company $company): static
+    {
+        // set the owning side of the relation if necessary
+        if ($company->getOwner() !== $this) {
+            $company->setOwner($this);
+        }
+
+        $this->company = $company;
 
         return $this;
     }

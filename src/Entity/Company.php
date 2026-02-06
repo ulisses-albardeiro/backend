@@ -1,0 +1,261 @@
+<?php
+
+namespace App\Entity;
+
+use App\Repository\CompanyRepository;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity(repositoryClass: CompanyRepository::class)]
+class Company
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $name = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $tradingName = null;
+
+    #[ORM\Column(length: 15, nullable: true)]
+    private ?string $registrationNumber = null;
+
+    #[ORM\Column(length: 50)]
+    private ?string $stateRegistration = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $email = null;
+
+    #[ORM\Column(length: 15, nullable: true)]
+    private ?string $phone = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $logo = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $website = null;
+
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $zipCode = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $street = null;
+
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $number = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $complement = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $neighborhood = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $city = null;
+
+    #[ORM\Column(length: 50)]
+    private ?string $state = null;
+
+    #[ORM\OneToOne(inversedBy: 'company', cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $owner = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): static
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getTradingName(): ?string
+    {
+        return $this->tradingName;
+    }
+
+    public function setTradingName(string $tradingName): static
+    {
+        $this->tradingName = $tradingName;
+
+        return $this;
+    }
+
+    public function getRegistrationNumber(): ?string
+    {
+        return $this->registrationNumber;
+    }
+
+    public function setRegistrationNumber(?string $registrationNumber): static
+    {
+        $this->registrationNumber = $registrationNumber;
+
+        return $this;
+    }
+
+    public function getStateRegistration(): ?string
+    {
+        return $this->stateRegistration;
+    }
+
+    public function setStateRegistration(string $stateRegistration): static
+    {
+        $this->stateRegistration = $stateRegistration;
+
+        return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): static
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+    public function getPhone(): ?string
+    {
+        return $this->phone;
+    }
+
+    public function setPhone(?string $phone): static
+    {
+        $this->phone = $phone;
+
+        return $this;
+    }
+
+    public function getLogo(): ?string
+    {
+        return $this->logo;
+    }
+
+    public function setLogo(?string $logo): static
+    {
+        $this->logo = $logo;
+
+        return $this;
+    }
+
+    public function getWebsite(): ?string
+    {
+        return $this->website;
+    }
+
+    public function setWebsite(?string $website): static
+    {
+        $this->website = $website;
+
+        return $this;
+    }
+
+    public function getZipCode(): ?string
+    {
+        return $this->zipCode;
+    }
+
+    public function setZipCode(?string $zipCode): static
+    {
+        $this->zipCode = $zipCode;
+
+        return $this;
+    }
+
+    public function getStreet(): ?string
+    {
+        return $this->street;
+    }
+
+    public function setStreet(?string $street): static
+    {
+        $this->street = $street;
+
+        return $this;
+    }
+
+    public function getNumber(): ?string
+    {
+        return $this->number;
+    }
+
+    public function setNumber(?string $number): static
+    {
+        $this->number = $number;
+
+        return $this;
+    }
+
+    public function getComplement(): ?string
+    {
+        return $this->complement;
+    }
+
+    public function setComplement(?string $complement): static
+    {
+        $this->complement = $complement;
+
+        return $this;
+    }
+
+    public function getNeighborhood(): ?string
+    {
+        return $this->neighborhood;
+    }
+
+    public function setNeighborhood(?string $neighborhood): static
+    {
+        $this->neighborhood = $neighborhood;
+
+        return $this;
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(string $city): static
+    {
+        $this->city = $city;
+
+        return $this;
+    }
+
+    public function getState(): ?string
+    {
+        return $this->state;
+    }
+
+    public function setState(string $state): static
+    {
+        $this->state = $state;
+
+        return $this;
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(User $owner): static
+    {
+        $this->owner = $owner;
+
+        return $this;
+    }
+}
