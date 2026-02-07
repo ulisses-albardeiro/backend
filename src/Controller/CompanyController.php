@@ -2,16 +2,15 @@
 
 namespace App\Controller;
 
+use DomainException;
 use App\Entity\User;
+use App\Exception\ValidationException;
 use Psr\Log\LoggerInterface;
 use App\Service\CompanyService;
-use App\DTO\Request\CompanyInputDTO;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
@@ -20,9 +19,8 @@ final class CompanyController extends AbstractController
 {
     public function __construct(
         private readonly LoggerInterface $logger,
-        private readonly ValidatorInterface $validator,
         private readonly CompanyService $companyService,
-        private readonly SerializerInterface $serializer,
+
     ) {}
 
     #[Route('/company', name: 'company_get', methods: ['GET'])]
@@ -46,31 +44,28 @@ final class CompanyController extends AbstractController
         $user = $this->getUser();
 
         try {
-            $companyInputDto = $this->serializer->deserialize(
-                $request->getContent(),
-                CompanyInputDTO::class,
-                'json'
-            );
+            $data = $request->request->all();
+            $logoFile = $request->files->get('logo');
 
-            $errors = $this->validator->validate($companyInputDto);
-            if (count($errors) > 0) {
-                return $this->json(['errors' => $errors], 400);
-            }
-
-            $companyOutputDto = $this->companyService->upsertCompany($companyInputDto, $user);
+            $companyOutputDto = $this->companyService->handleUpsert($user, $data, $logoFile);
 
             return $this->json([
                 'message' => 'COMPANY_SAVED_SUCCESSFULLY',
                 'company' => $companyOutputDto
             ]);
-
+        } catch (ValidationException $e) {
+            return $this->json([
+                'message' => 'INVALID_DATA',
+                'errors' => $e->getErrors()
+            ], 400);
         } catch (\Exception $e) {
             $this->logger->error('Failed to save company.', [
-                'user_id' => $user->getId() ?? "null",
+                'user_id' => $user->getId(),
                 'error' => $e->getMessage()
             ]);
-
-            return $this->json(['message' => 'ERROR_SAVING_COMPANY'], 500);
+            return $this->json([
+                'message' => 'ERROR_SAVING_COMPANY'
+            ], 500);
         }
     }
 }
