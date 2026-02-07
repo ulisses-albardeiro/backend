@@ -14,7 +14,7 @@ readonly class CompanyInputDTO
         #[Assert\Length(max: 255)]
         public string $tradingName,
 
-        #[Assert\Length(min: 14, max: 18)]
+        #[Assert\Length(min: 14, max: 14)]
         public ?string $registrationNumber,
 
         #[Assert\NotBlank]
