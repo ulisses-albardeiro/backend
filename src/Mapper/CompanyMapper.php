@@ -2,10 +2,10 @@
 
 namespace App\Mapper;
 
+use App\Entity\User;
+use App\Entity\Company;
 use App\DTO\Request\CompanyInputDTO;
 use App\DTO\Response\CompanyOutputDTO;
-use App\Entity\Company;
-use App\Entity\User;
 
 class CompanyMapper
 {
