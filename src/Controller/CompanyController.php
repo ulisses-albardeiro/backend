@@ -3,12 +3,15 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Service\CompanyService;
 use Psr\Log\LoggerInterface;
+use App\Service\CompanyService;
+use App\DTO\Request\CompanyInputDTO;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
@@ -16,7 +19,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 final class CompanyController extends AbstractController
 {
     public function __construct(
-        private LoggerInterface $logger,
+        private readonly LoggerInterface $logger,
+        private readonly ValidatorInterface $validator,
+        private readonly CompanyService $companyService,
+        private readonly SerializerInterface $serializer,
     ) {}
 
     #[Route('/company', name: 'company_get', methods: ['GET'])]
@@ -24,69 +30,47 @@ final class CompanyController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $company = $user->getCompany();
+        $companyDto = $this->companyService->getCompanyByUser($user);
 
-        if (!$company) {
+        if (!$companyDto) {
             return $this->json(['message' => 'UNREGISTERED_COMPANY'], 404);
         }
 
-        return $this->json(['company' => $company], 200, [], ['groups' => ['company:read']]);
+        return $this->json(['company' => $companyDto]);
     }
 
-    #[Route('/company', name: 'company_upsert', methods: ['POST'])]
-    public function store(Request $request): JsonResponse
+    #[Route('/company', name: 'company_save', methods: ['POST', 'PUT'])]
+    public function save(Request $request): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
-        $data = json_decode($request->getContent(), true);
-
-        if (!$data) {
-            return $this->json(['message' => 'INVALID_JSON'], 400);
-        }
 
         try {
+            $companyInputDto = $this->serializer->deserialize(
+                $request->getContent(),
+                CompanyInputDTO::class,
+                'json'
+            );
 
-            //Service...
-            
+            $errors = $this->validator->validate($companyInputDto);
+            if (count($errors) > 0) {
+                return $this->json(['errors' => $errors], 400);
+            }
+
+            $companyOutputDto = $this->companyService->upsertCompany($companyInputDto, $user);
+
             return $this->json([
                 'message' => 'COMPANY_SAVED_SUCCESSFULLY',
-                'company' => ''
-            ], 200, [], ['groups' => ['company:read']]);
-        } catch (\Exception $e) {
-            $this->logger->error('Company saved failed.', [
-                'user' => $user->getId(),
-                'exception' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'company' => $companyOutputDto
             ]);
+
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to save company.', [
+                'user_id' => $user->getId() ?? "null",
+                'error' => $e->getMessage()
+            ]);
+
             return $this->json(['message' => 'ERROR_SAVING_COMPANY'], 500);
-        }
-    }
-
-    #[Route('/company', name: 'company_upsert', methods: ['PUT'])]
-    public function update(Request $request): JsonResponse
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-        $data = json_decode($request->getContent(), true);
-
-        if (!$data) {
-            return $this->json(['message' => 'INVALID_JSON'], 400);
-        }
-
-        try {
-
-
-            return $this->json([
-                'message' => 'COMPANY_SAVED_SUCCESSFULLY',
-                'company' => ''
-            ], 200, [], ['groups' => ['company:read']]);
-        } catch (\Exception $e) {
-            $this->logger->error('Company saved failed.', [
-                'user' => $user->getId(),
-                'exception' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return $this->json(['message' => 'ERROR_UPDATING_COMPANY'], 500);
         }
     }
 }
