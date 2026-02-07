@@ -10,8 +10,8 @@ use App\DTO\Response\CompanyOutputDTO;
 use App\Exception\ValidationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class CompanyService
 {
@@ -32,10 +32,18 @@ class CompanyService
             throw new ValidationException($errors);
         }
 
-        $company = $this->upsertCompany($inputDto, $user);
+        $currentCompany = $user->getCompany();
+        $oldLogoName = $currentCompany ? $currentCompany->getLogo() : null;
+
+        $company = $this->upsertCompany($inputDto, $user, $currentCompany);
 
         if ($logoFile) {
             $subDir = 'company_' . $company->getId() . '/logo';
+
+            if ($oldLogoName) {
+                $this->fileService->remove($subDir, $oldLogoName);
+            }
+
             $fileName = $this->fileService->upload($logoFile, $subDir);
 
             $company->setLogo($fileName);
@@ -48,11 +56,9 @@ class CompanyService
     /**
      * Upsert Logic (Update or Register)
      */
-    public function upsertCompany(CompanyInputDTO $dto, User $user): Company
+    public function upsertCompany(CompanyInputDTO $dto, User $user, ?Company $currentCompany): Company
     {
-        $company = $user->getCompany();
-
-        $company = $this->mapper->toEntity($dto, $user, $company);
+        $company = $this->mapper->toEntity($dto, $user, $currentCompany);
 
         $this->entityManager->persist($company);
         $this->entityManager->flush();

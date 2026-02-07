@@ -25,4 +25,13 @@ class FileService
 
         return $fileName;
     }
+
+    public function remove(string $subDirectory, string $fileName): void
+    {
+        $filePath = $this->targetDirectory . '/' . $subDirectory . '/' . $fileName;
+
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+    }
 }
