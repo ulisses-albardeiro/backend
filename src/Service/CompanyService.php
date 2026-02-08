@@ -7,11 +7,8 @@ use App\Entity\Company;
 use App\Mapper\CompanyMapper;
 use App\DTO\Request\CompanyInputDTO;
 use App\DTO\Response\CompanyOutputDTO;
-use App\Exception\ValidationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class CompanyService
 {
@@ -19,23 +16,18 @@ class CompanyService
         private CompanyMapper $mapper,
         private FileService $fileService,
         private EntityManagerInterface $entityManager,
-        private readonly ValidatorInterface $validator,
-        private readonly DenormalizerInterface $denormalizer,
     ) {}
 
-    public function handleUpsert(User $user, array $data, ?UploadedFile $logoFile): CompanyOutputDTO
+    public function handleUpsert(User $user, CompanyInputDTO $inputDto, ?UploadedFile $logoFile): CompanyOutputDTO
     {
-        $inputDto = $this->denormalizer->denormalize($data, CompanyInputDTO::class);
-
-        $errors = $this->validator->validate($inputDto);
-        if (count($errors) > 0) {
-            throw new ValidationException($errors);
-        }
-
         $currentCompany = $user->getCompany();
         $oldLogoName = $currentCompany ? $currentCompany->getLogo() : null;
 
         $company = $this->upsertCompany($inputDto, $user, $currentCompany);
+
+        if ($user->getCompany() === null) {
+            $user->setCompany($company);
+        }
 
         if ($logoFile) {
             $subDir = 'company_' . $company->getId() . '/logo';

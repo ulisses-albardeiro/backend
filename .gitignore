@@ -17,3 +17,7 @@
 /public/uploads/*
 !/public/uploads/.gitkeep
 ##> File sistem ##
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###
