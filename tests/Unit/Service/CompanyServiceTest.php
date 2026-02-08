@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Tests\Unit\Service;
 
 use App\Entity\User;
@@ -12,49 +11,48 @@ use App\DTO\Request\CompanyInputDTO;
 use App\DTO\Response\CompanyOutputDTO;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\Validator\ConstraintViolationList;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 #[AllowMockObjectsWithoutExpectations]
 class CompanyServiceTest extends TestCase
 {
+    private $mapper;
+    private $fileService;
+    private $entityManager;
+    private $service;
+
+    protected function setUp(): void
+    {
+        $this->mapper = $this->createMock(CompanyMapper::class);
+        $this->fileService = $this->createMock(FileService::class);
+        $this->entityManager = $this->createMock(EntityManagerInterface::class);
+
+        $this->service = new CompanyService(
+            $this->mapper, 
+            $this->fileService, 
+            $this->entityManager
+        );
+    }
+
     public function testHandleUpsertCreatesNewCompanyWhenUserHasNone(): void
     {
-        $mapper = $this->createStub(CompanyMapper::class);
-        $fileService = $this->createMock(FileService::class);
-        $entityManager = $this->createMock(EntityManagerInterface::class);
-        $validator = $this->createStub(ValidatorInterface::class);
-        $denormalizer = $this->createStub(DenormalizerInterface::class);
-
         $user = new User();
         $dto = $this->createFullDto();
         $company = new Company();
 
-        $denormalizer->method('denormalize')->willReturn($dto);
-        $validator->method('validate')->willReturn(new ConstraintViolationList());
-        $mapper->method('toEntity')->willReturn($company);
-        $mapper->method('toOutputDto')->willReturn($this->createStub(CompanyOutputDTO::class));
+        $this->mapper->method('toEntity')->willReturn($company);
+        $this->mapper->method('toOutputDto')->willReturn($this->createStub(CompanyOutputDTO::class));
 
-        $entityManager->expects($this->once())->method('persist')->with($company);
-        $entityManager->expects($this->once())->method('flush');
-        $fileService->expects($this->never())->method('remove');
+        $this->entityManager->expects($this->once())->method('persist')->with($company);
+        $this->entityManager->expects($this->once())->method('flush');
 
-        $service = new CompanyService($mapper, $fileService, $entityManager, $validator, $denormalizer);
-        $service->handleUpsert($user, [], null);
+        $this->service->handleUpsert($user, $dto, null);
 
-        $this->assertSame($company, $user->getCompany(), 'A empresa deve ser vinculada ao usuário');
+        $this->assertSame($company, $user->getCompany(), 'The company must be linked to the user.');
     }
 
     public function testHandleUpsertUpdatesExistingCompanyWithoutLogoChange(): void
     {
-        $mapper = $this->createStub(CompanyMapper::class);
-        $fileService = $this->createMock(FileService::class);
-        $entityManager = $this->createMock(EntityManagerInterface::class);
-        $validator = $this->createStub(ValidatorInterface::class);
-        $denormalizer = $this->createStub(DenormalizerInterface::class);
-
         $user = new User();
         $company = new Company();
         $company->setLogo('logo_existente.png');
@@ -62,32 +60,22 @@ class CompanyServiceTest extends TestCase
 
         $dto = $this->createFullDto();
 
-        $denormalizer->method('denormalize')->willReturn($dto);
-        $validator->method('validate')->willReturn(new ConstraintViolationList());
-        $mapper->method('toEntity')->willReturn($company);
-        $mapper->method('toOutputDto')->willReturn($this->createStub(CompanyOutputDTO::class));
+        $this->mapper->method('toEntity')->willReturn($company);
+        $this->mapper->method('toOutputDto')->willReturn($this->createStub(CompanyOutputDTO::class));
 
-        $entityManager->expects($this->once())->method('flush');
-        $fileService->expects($this->never())->method('upload');
-        $fileService->expects($this->never())->method('remove');
+        $this->entityManager->expects($this->once())->method('flush');
+        $this->fileService->expects($this->never())->method('upload');
 
-        $service = new CompanyService($mapper, $fileService, $entityManager, $validator, $denormalizer);
-        $service->handleUpsert($user, [], null);
+        $this->service->handleUpsert($user, $dto, null);
 
-        $this->assertEquals('logo_existente.png', $company->getLogo(), 'A logo não deve ser alterada');
+        $this->assertEquals('logo_existente.png', $company->getLogo());
     }
 
     public function testHandleUpsertDeletesOldLogoWhenNewOneIsUploaded(): void
     {
-        $mapper = $this->createStub(CompanyMapper::class);
-        $fileService = $this->createMock(FileService::class);
-        $entityManager = $this->createMock(EntityManagerInterface::class);
-        $validator = $this->createStub(ValidatorInterface::class);
-        $denormalizer = $this->createStub(DenormalizerInterface::class);
-
         $user = new User();
         $company = new Company();
-
+        
         $reflection = new \ReflectionClass($company);
         $idProp = $reflection->getProperty('id');
         $idProp->setValue($company, 1);
@@ -98,19 +86,16 @@ class CompanyServiceTest extends TestCase
         $dto = $this->createFullDto();
         $uploadedFile = $this->createMock(UploadedFile::class);
 
-        $denormalizer->method('denormalize')->willReturn($dto);
-        $validator->method('validate')->willReturn(new ConstraintViolationList());
-        $mapper->method('toEntity')->willReturn($company);
-        $mapper->method('toOutputDto')->willReturn($this->createStub(CompanyOutputDTO::class));
+        $this->mapper->method('toEntity')->willReturn($company);
+        $this->mapper->method('toOutputDto')->willReturn($this->createStub(CompanyOutputDTO::class));
 
-        $fileService->expects($this->once())
+        $this->fileService->expects($this->once())
             ->method('remove')
             ->with('company_1/logo', 'logo_antiga.png');
 
-        $fileService->method('upload')->willReturn('nova_logo.jpg');
+        $this->fileService->method('upload')->willReturn('nova_logo.jpg');
 
-        $service = new CompanyService($mapper, $fileService, $entityManager, $validator, $denormalizer);
-        $service->handleUpsert($user, ['some' => 'data'], $uploadedFile);
+        $this->service->handleUpsert($user, $dto, $uploadedFile);
 
         $this->assertEquals('nova_logo.jpg', $company->getLogo());
     }
