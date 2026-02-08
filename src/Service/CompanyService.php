@@ -37,6 +37,10 @@ class CompanyService
 
         $company = $this->upsertCompany($inputDto, $user, $currentCompany);
 
+        if ($user->getCompany() === null) {
+            $user->setCompany($company);
+        }
+        
         if ($logoFile) {
             $subDir = 'company_' . $company->getId() . '/logo';
 
