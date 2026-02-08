@@ -2,24 +2,23 @@
 
 namespace App\Controller;
 
-use DomainException;
 use App\Entity\User;
-use App\Exception\ValidationException;
 use Psr\Log\LoggerInterface;
 use App\Service\CompanyService;
+use App\Exception\ValidationException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
 #[Route('/api', name: 'api_')]
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class CompanyController extends AbstractController
 {
     public function __construct(
-        private readonly LoggerInterface $logger,
-        private readonly CompanyService $companyService,
+        private LoggerInterface $logger,
+        private CompanyService $companyService,
 
     ) {}
 
