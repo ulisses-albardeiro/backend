@@ -2,6 +2,8 @@
 
 namespace App\DTO\Response;
 
+use App\Entity\Company;
+
 readonly class CompanyOutputDTO
 {
     public function __construct(
@@ -22,4 +24,26 @@ readonly class CompanyOutputDTO
         public string $city,
         public string $state,
     ) {}
+
+    public static function fromEntity(Company $company): self
+    {
+        return new self(
+            id: $company->getId(),
+            name: $company->getName(),
+            tradingName: $company->getTradingName(),
+            registrationNumber: $company->getRegistrationNumber(),
+            stateRegistration: $company->getStateRegistration(),
+            email: $company->getEmail(),
+            phone: $company->getPhone(),
+            logo: $company->getLogo(),
+            website: $company->getWebsite(),
+            zipCode: $company->getZipCode(),
+            street: $company->getStreet(),
+            number: $company->getNumber(),
+            complement: $company->getComplement(),
+            neighborhood: $company->getNeighborhood(),
+            city: $company->getCity(),
+            state: $company->getState(),
+        );
+    }
 }

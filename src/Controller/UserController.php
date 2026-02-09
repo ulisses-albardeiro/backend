@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Service\UserService;
 use Psr\Log\LoggerInterface;
+use App\DTO\Response\CompanyOutputDTO;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,12 +23,17 @@ final class UserController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
+        $company = $user->getCompany();
 
-        return $this->json([
+        $data = [
             'id'    => $user->getId(),
             'email' => $user->getUserIdentifier(),
+            'name'  => $user->getName(),
             'roles' => $user->getRoles(),
-        ]);
+            'company' => CompanyOutputDTO::fromEntity($company) ?? null,
+        ];
+
+        return $this->json($data);
     }
 
     #[Route('api/register', name: 'app_register', methods: ['POST'])]
