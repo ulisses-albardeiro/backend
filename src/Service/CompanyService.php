@@ -30,7 +30,7 @@ class CompanyService
         }
 
         if ($logoFile) {
-            $subDir = 'company_' . $company->getId() . '/logo';
+            $subDir = 'company_' . md5($company->getId() . $company->getCreatedAt()->format('U')) . '/logo';
 
             if ($oldLogoName) {
                 $this->fileService->remove($subDir, $oldLogoName);
@@ -42,7 +42,7 @@ class CompanyService
             $this->entityManager->flush();
         }
 
-        return $this->mapper->toOutputDto($company);
+        return $this->mapper->toOutputDto($company, $this->fileService->getPublicUrl($subDir, $company->getLogo()));
     }
 
     /**
@@ -66,6 +66,7 @@ class CompanyService
             return null;
         }
 
-        return $this->mapper->toOutputDTO($company);
+        $subDir = 'company_' . md5($company->getId() . $company->getCreatedAt()->format('U')) . '/logo';
+        return $this->mapper->toOutputDto($company, $this->fileService->getPublicUrl($subDir, $company->getLogo()));
     }
 }

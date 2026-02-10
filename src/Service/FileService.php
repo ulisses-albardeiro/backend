@@ -2,13 +2,14 @@
 
 namespace App\Service;
 
-use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class FileService
 {
     public function __construct(
         private string $targetDirectory,
+        private RequestStack $requestStack
     ) {}
 
     public function upload(UploadedFile $file, string $subDirectory): string
@@ -33,5 +34,22 @@ class FileService
         if (file_exists($filePath)) {
             unlink($filePath);
         }
+    }
+
+    public function getPublicUrl(string $subDirectory, ?string $fileName): string
+    {
+        if (!$fileName) {
+            return '';
+        }
+
+        $filePath = $this->targetDirectory . '/' . $subDirectory . '/' . $fileName;
+        if (!file_exists($filePath)) {
+            return '';
+        }
+
+        $request = $this->requestStack->getCurrentRequest();
+        $baseUrl = $request ? $request->getSchemeAndHttpHost() : '';
+
+        return "$baseUrl/uploads/$subDirectory/$fileName";
     }
 }

@@ -33,7 +33,7 @@ class CompanyMapper
         return $company;
     }
 
-    public function toOutputDTO(Company $company): CompanyOutputDTO
+    public function toOutputDTO(Company $company, ?string $logoUrl): CompanyOutputDTO
     {
         return new CompanyOutputDTO(
             id: $company->getId(),
@@ -43,7 +43,7 @@ class CompanyMapper
             stateRegistration: $company->getStateRegistration(),
             email: $company->getEmail(),
             phone: $company->getPhone(),
-            logo: $company->getLogo(),
+            logo: $logoUrl,
             website: $company->getWebsite(),
             zipCode: $company->getZipCode(),
             street: $company->getStreet(),
@@ -51,7 +51,9 @@ class CompanyMapper
             complement: $company->getComplement(),
             neighborhood: $company->getNeighborhood(),
             city: $company->getCity(),
-            state: $company->getState()
+            state: $company->getState(),
+            created_at: $company->getCreatedAt(),
+            updated_at: $company->getUpdatedAt(),
         );
     }
 }

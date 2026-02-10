@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Service\UserService;
 use Psr\Log\LoggerInterface;
 use App\DTO\Response\CompanyOutputDTO;
+use App\Service\CompanyService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,18 +20,17 @@ final class UserController extends AbstractController
 
     #[Route('api/me', name: 'app_me')]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function index(): JsonResponse
+    public function index(CompanyService $companyService): JsonResponse
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $company = $user->getCompany();
 
         $data = [
             'id'    => $user->getId(),
             'email' => $user->getUserIdentifier(),
             'name'  => $user->getName(),
             'roles' => $user->getRoles(),
-            'company' => CompanyOutputDTO::fromEntity($company) ?? null,
+            'company' => $companyService->getCompanyByUser($user) ?? null,
         ];
 
         return $this->json($data);
