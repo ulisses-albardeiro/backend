@@ -29,8 +29,9 @@ class CompanyService
             $user->setCompany($company);
         }
 
+        $subDir = $this->getSubDir($company);
+
         if ($logoFile) {
-            $subDir = 'company_' . md5($company->getId() . $company->getCreatedAt()->format('U')) . '/logo';
 
             if ($oldLogoName) {
                 $this->fileService->remove($subDir, $oldLogoName);
@@ -66,7 +67,17 @@ class CompanyService
             return null;
         }
 
-        $subDir = 'company_' . md5($company->getId() . $company->getCreatedAt()->format('U')) . '/logo';
+        $subDir = $this->getSubDir($company);
+
         return $this->mapper->toOutputDto($company, $this->fileService->getPublicUrl($subDir, $company->getLogo()));
+    }
+
+    private function getSubDir(Company $company): string
+    {
+        if ($company->getCreatedAt()) {
+            return 'company_' . md5($company->getCreatedAt()->format('U')) . '/logo';
+        }
+
+        return '';
     }
 }

@@ -91,7 +91,7 @@ class CompanyServiceTest extends TestCase
 
         $this->fileService->expects($this->once())
             ->method('remove')
-            ->with('company_1/logo', 'logo_antiga.png');
+            ->with($this->getSubDir($company), 'logo_antiga.png');
 
         $this->fileService->method('upload')->willReturn('nova_logo.jpg');
 
@@ -118,5 +118,14 @@ class CompanyServiceTest extends TestCase
             city: 'São Paulo',
             state: 'SP'
         );
+    }
+
+    private function getSubDir(Company $company): string
+    {
+        if ($company->getCreatedAt()) {
+            return 'company_' . md5($company->getCreatedAt()->format('U')) . '/logo';
+        }
+
+        return '';
     }
 }
