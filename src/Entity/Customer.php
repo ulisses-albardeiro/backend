@@ -2,85 +2,77 @@
 
 namespace App\Entity;
 
+use App\Enum\CustomerType;
 use Doctrine\ORM\Mapping as ORM;
-use App\Repository\CompanyRepository;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\DBAL\Types\Types;
+use App\Repository\CustomerRepository;
 
 #[ORM\HasLifecycleCallbacks]
-#[ORM\Entity(repositoryClass: CompanyRepository::class)]
-class Company
+#[ORM\Entity(repositoryClass: CustomerRepository::class)]
+class Customer
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $name = null;
+    #[ORM\ManyToOne(inversedBy: 'customers')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Company $company = null;
+
+    #[ORM\Column(enumType: CustomerType::class)]
+    private ?CustomerType $type = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $tradingName = null;
-
-    #[ORM\Column(length: 15, nullable: true)]
-    private ?string $registrationNumber = null;
-
-    #[ORM\Column(length: 50)]
-    private ?string $stateRegistration = null;
-
-    #[ORM\Column(length: 50, nullable: true)]
-    private ?string $email = null;
-
-    #[ORM\Column(length: 15, nullable: true)]
-    private ?string $phone = null;
+    private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $logo = null;
+    private ?string $tradingName = null;
 
-    #[ORM\Column(length: 50, nullable: true)]
-    private ?string $website = null;
+    #[ORM\Column(length: 14, nullable: true)]
+    private ?string $document = null;
 
-    #[ORM\Column(length: 10, nullable: true)]
+    #[ORM\Column(length: 20)]
+    private ?string $stateRegistration = null;
+
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $email = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $phone = null;
+
+    #[ORM\Column(length: 10)]
     private ?string $zipCode = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $street = null;
 
-    #[ORM\Column(length: 10, nullable: true)]
+    #[ORM\Column(length: 20, nullable: true)]
     private ?string $number = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $complement = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 100, nullable: true)]
     private ?string $neighborhood = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 100, nullable: true)]
     private ?string $city = null;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 2, nullable: true)]
     private ?string $state = null;
 
-    #[ORM\OneToOne(inversedBy: 'company', cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $owner = null;
+    #[ORM\Column]
+    private ?bool $status = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $notes = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
-
-    /**
-     * @var Collection<int, Customer>
-     */
-    #[ORM\OneToMany(targetEntity: Customer::class, mappedBy: 'company', orphanRemoval: true)]
-    private Collection $customers;
-
-    public function __construct()
-    {
-        $this->customers = new ArrayCollection();
-    }
 
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
@@ -99,12 +91,36 @@ class Company
         return $this->id;
     }
 
+    public function getCompany(): ?Company
+    {
+        return $this->company;
+    }
+
+    public function setCompany(?Company $company): static
+    {
+        $this->company = $company;
+
+        return $this;
+    }
+
+    public function getType(): ?CustomerType
+    {
+        return $this->type;
+    }
+
+    public function setType(CustomerType $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
     public function getName(): ?string
     {
         return $this->name;
     }
 
-    public function setName(?string $name): static
+    public function setName(string $name): static
     {
         $this->name = $name;
 
@@ -116,21 +132,21 @@ class Company
         return $this->tradingName;
     }
 
-    public function setTradingName(string $tradingName): static
+    public function setTradingName(?string $tradingName): static
     {
         $this->tradingName = $tradingName;
 
         return $this;
     }
 
-    public function getRegistrationNumber(): ?string
+    public function getDocument(): ?string
     {
-        return $this->registrationNumber;
+        return $this->document;
     }
 
-    public function setRegistrationNumber(?string $registrationNumber): static
+    public function setDocument(?string $document): static
     {
-        $this->registrationNumber = $registrationNumber;
+        $this->document = $document;
 
         return $this;
     }
@@ -140,7 +156,7 @@ class Company
         return $this->stateRegistration;
     }
 
-    public function setStateRegistration(string $stateRegistration): static
+    public function setStateRegistration(?string $stateRegistration): static
     {
         $this->stateRegistration = $stateRegistration;
 
@@ -167,30 +183,6 @@ class Company
     public function setPhone(?string $phone): static
     {
         $this->phone = $phone;
-
-        return $this;
-    }
-
-    public function getLogo(): ?string
-    {
-        return $this->logo;
-    }
-
-    public function setLogo(?string $logo): static
-    {
-        $this->logo = $logo;
-
-        return $this;
-    }
-
-    public function getWebsite(): ?string
-    {
-        return $this->website;
-    }
-
-    public function setWebsite(?string $website): static
-    {
-        $this->website = $website;
 
         return $this;
     }
@@ -260,7 +252,7 @@ class Company
         return $this->city;
     }
 
-    public function setCity(string $city): static
+    public function setCity(?string $city): static
     {
         $this->city = $city;
 
@@ -272,21 +264,33 @@ class Company
         return $this->state;
     }
 
-    public function setState(string $state): static
+    public function setState(?string $state): static
     {
         $this->state = $state;
 
         return $this;
     }
 
-    public function getOwner(): ?User
+    public function isStatus(): ?bool
     {
-        return $this->owner;
+        return $this->status;
     }
 
-    public function setOwner(User $owner): static
+    public function setStatus(bool $status): static
     {
-        $this->owner = $owner;
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getNotes(): ?string
+    {
+        return $this->notes;
+    }
+
+    public function setNotes(?string $notes): static
+    {
+        $this->notes = $notes;
 
         return $this;
     }
@@ -311,36 +315,6 @@ class Company
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Customer>
-     */
-    public function getCustomers(): Collection
-    {
-        return $this->customers;
-    }
-
-    public function addCustomer(Customer $customer): static
-    {
-        if (!$this->customers->contains($customer)) {
-            $this->customers->add($customer);
-            $customer->setCompany($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCustomer(Customer $customer): static
-    {
-        if ($this->customers->removeElement($customer)) {
-            // set the owning side to null (unless already changed)
-            if ($customer->getCompany() === $this) {
-                $customer->setCompany(null);
-            }
-        }
 
         return $this;
     }
