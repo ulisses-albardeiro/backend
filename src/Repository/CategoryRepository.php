@@ -2,9 +2,10 @@
 
 namespace App\Repository;
 
+use App\Entity\Company;
 use App\Entity\Category;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<Category>
@@ -16,28 +17,27 @@ class CategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, Category::class);
     }
 
-    //    /**
-    //     * @return Category[] Returns an array of Category objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findByIdAndCompany(int $id, Company $company): ?Category
+    {
+        $category = $this->findOneBy([
+            'id' => $id,
+            'company' => $company
+        ]);
 
-    //    public function findOneBySomeField($value): ?Category
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        return $category;
+    }
+
+    public function findCategoryTree(Company $company): array
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.subCategories', 's')
+            ->addSelect('s')
+            ->where('c.company = :company')
+            ->andWhere('c.parent IS NULL')
+            ->setParameter('company', $company)
+            ->orderBy('c.name', 'ASC')
+            ->addOrderBy('s.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
