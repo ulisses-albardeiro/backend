@@ -77,9 +77,16 @@ class Company
     #[ORM\OneToMany(targetEntity: Customer::class, mappedBy: 'company', orphanRemoval: true)]
     private Collection $customers;
 
+    /**
+     * @var Collection<int, Category>
+     */
+    #[ORM\OneToMany(targetEntity: Category::class, mappedBy: 'company', orphanRemoval: true)]
+    private Collection $categories;
+
     public function __construct()
     {
         $this->customers = new ArrayCollection();
+        $this->categories = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -339,6 +346,36 @@ class Company
             // set the owning side to null (unless already changed)
             if ($customer->getCompany() === $this) {
                 $customer->setCompany(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Category>
+     */
+    public function getCategories(): Collection
+    {
+        return $this->categories;
+    }
+
+    public function addCategory(Category $category): static
+    {
+        if (!$this->categories->contains($category)) {
+            $this->categories->add($category);
+            $category->setCompany($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCategory(Category $category): static
+    {
+        if ($this->categories->removeElement($category)) {
+            // set the owning side to null (unless already changed)
+            if ($category->getCompany() === $this) {
+                $category->setCompany(null);
             }
         }
 
