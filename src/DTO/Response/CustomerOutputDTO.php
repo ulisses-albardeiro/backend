@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Dto\Response;
+namespace App\DTO\Response;
 
 readonly class CustomerOutputDTO
 {
@@ -24,5 +24,6 @@ readonly class CustomerOutputDTO
         public bool $status,
         public ?string $notes,
         public string $createdAt,
+        public ?string $updatedAt,
     ) {}
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Dto\Request;
+namespace App\DTO\Request;
 
 use App\Enum\CustomerType;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -18,8 +18,7 @@ readonly class CustomerInputDTO
         #[Assert\Length(max: 255)]
         public ?string $tradingName = null,
 
-        #[Assert\Length(min: 11, max: 14)]
-        #[Assert\Regex(pattern: "/^\d+$/")]
+        #[Assert\Length(exactly: 14)]
         public ?string $document = null,
 
         #[Assert\Length(max: 20)]

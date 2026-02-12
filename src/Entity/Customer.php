@@ -32,7 +32,7 @@ class Customer
     #[ORM\Column(length: 14, nullable: true)]
     private ?string $document = null;
 
-    #[ORM\Column(length: 20)]
+    #[ORM\Column(length: 20, nullable: true)]
     private ?string $stateRegistration = null;
 
     #[ORM\Column(length: 180, nullable: true)]
@@ -41,7 +41,7 @@ class Customer
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $phone = null;
 
-    #[ORM\Column(length: 10)]
+    #[ORM\Column(length: 10, nullable: true)]
     private ?string $zipCode = null;
 
     #[ORM\Column(length: 255, nullable: true)]

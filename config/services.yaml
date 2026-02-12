@@ -30,3 +30,7 @@ services:
     App\Service\FileService:
         arguments:
             $targetDirectory: '%uploads_directory%'
+
+    App\Serializer\EmptyStringToNullDenormalizer:
+        tags:
+            - { name: 'serializer.denormalizer', priority: 1000 }
