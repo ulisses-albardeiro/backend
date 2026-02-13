@@ -121,7 +121,7 @@ class TransactionService
         ]);
         
         if (!$transaction) {
-            throw new NotFoundHttpException('TRANSLACTION_NOT_FOUND');
+            throw new NotFoundHttpException('TRANSACTION_NOT_FOUND');
         }
 
         $this->em->remove($transaction);
