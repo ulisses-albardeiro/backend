@@ -83,10 +83,17 @@ class Company
     #[ORM\OneToMany(targetEntity: Category::class, mappedBy: 'company', orphanRemoval: true)]
     private Collection $categories;
 
+    /**
+     * @var Collection<int, Transaction>
+     */
+    #[ORM\OneToMany(targetEntity: Transaction::class, mappedBy: 'company', orphanRemoval: true)]
+    private Collection $transactions;
+
     public function __construct()
     {
         $this->customers = new ArrayCollection();
         $this->categories = new ArrayCollection();
+        $this->transactions = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -376,6 +383,36 @@ class Company
             // set the owning side to null (unless already changed)
             if ($category->getCompany() === $this) {
                 $category->setCompany(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Transaction>
+     */
+    public function getTransactions(): Collection
+    {
+        return $this->transactions;
+    }
+
+    public function addTransaction(Transaction $transaction): static
+    {
+        if (!$this->transactions->contains($transaction)) {
+            $this->transactions->add($transaction);
+            $transaction->setCompany($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTransaction(Transaction $transaction): static
+    {
+        if ($this->transactions->removeElement($transaction)) {
+            // set the owning side to null (unless already changed)
+            if ($transaction->getCompany() === $this) {
+                $transaction->setCompany(null);
             }
         }
 
