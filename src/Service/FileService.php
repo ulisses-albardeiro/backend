@@ -2,8 +2,8 @@
 
 namespace App\Service;
 
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class FileService
 {
@@ -51,5 +51,41 @@ class FileService
         $baseUrl = $request ? $request->getSchemeAndHttpHost() : '';
 
         return "$baseUrl/uploads/$subDirectory/$fileName";
+    }
+
+    public function getPath(string $subDirectory, ?string $fileName): string
+    {
+        if (!$fileName) {
+            return '';
+        }
+
+        $filePath = $this->targetDirectory . '/' . $subDirectory . '/' . $fileName;
+        if (!file_exists($filePath)) {
+            return '';
+        }
+
+        return $filePath;
+    }
+
+    public function getBase64(string $subDirectory, ?string $fileName): string
+    {
+        if (!$fileName) {
+            return '';
+        }
+
+        $filePath = $this->targetDirectory . '/' . $subDirectory . '/' . $fileName;
+
+        if (!file_exists($filePath)) {
+            return '';
+        }
+
+        try {
+            $data = file_get_contents($filePath);
+            $type = pathinfo($filePath, PATHINFO_EXTENSION);
+
+            return 'data:image/' . $type . ';base64,' . base64_encode($data);
+        } catch (\Exception) {
+            return '';
+        }
     }
 }

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Orçamento
+			{{ quote.code }}</title>
+		<style>
+			body {
+				font-family: 'Helvetica', 'Arial', sans-serif;
+				color: #333;
+				font-size: 11px;
+				line-height: 1.4;
+			}
+			.header {
+				border-bottom: 2px solid #eee;
+				padding-bottom: 20px;
+				margin-bottom: 20px;
+			}
+			.logo {
+				max-width: 150px;
+				max-height: 80px;
+				margin-bottom: 10px;
+			}
+			.company-details {
+				font-size: 10px;
+				color: #666;
+			}
+			.table {
+				width: 100%;
+				border-collapse: collapse;
+				margin-bottom: 20px;
+			}
+			.table th {
+				background-color: #f8f8f8;
+				text-align: left;
+				padding: 8px;
+				border-bottom: 2px solid #ddd;
+			}
+			.table td {
+				padding: 8px;
+				border-bottom: 1px solid #eee;
+			}
+			.info-grid {
+				width: 100%;
+				margin-bottom: 30px;
+			}
+			.info-box {
+				border: 1px solid #eee;
+				padding: 10px;
+				vertical-align: top;
+				width: 50%;
+			}
+			.totals {
+				float: right;
+				width: 250px;
+				margin-top: 20px;
+			}
+			.totals-row {
+				width: 100%;
+				border-bottom: 1px solid #eee;
+				padding: 5px 0;
+			}
+			.totals-row.grand-total {
+				border-bottom: none;
+				font-weight: bold;
+				font-size: 14px;
+				color: #000;
+				padding-top: 10px;
+			}
+			.text-right {
+				text-align: right;
+			}
+			.status-badge {
+				padding: 4px 8px;
+				border-radius: 4px;
+				color: #fff;
+				font-weight: bold;
+				text-transform: uppercase;
+				font-size: 9px;
+			}
+			.footer {
+				position: fixed;
+				bottom: -20px;
+				width: 100%;
+				text-align: center;
+				font-size: 9px;
+				color: #999;
+				border-top: 1px solid #eee;
+				padding-top: 5px;
+			}
+		</style>
+	</head>
+	<body>
+
+		<div class="header">
+			<table style="width: 100%;">
+				<tr>
+					<td style="width: 60%;">
+						{% if company.logo %}
+							<img src="{{ company.logo }}" class="logo">
+						{% endif %}
+						<div class="company-details">
+							<strong>{{ company.tradingName ?: company.name }}</strong><br>
+
+							{% if company.registrationNumber %}
+								CNPJ:
+								{{ company.registrationNumber }}<br>
+							{% endif %}
+
+							{% if company.street %}
+								{{ company.street }}{{ company.number ? ', ' ~ company.number }}{{ company.complement ? ' - ' ~ company.complement }}<br>
+							{% endif %}
+
+							{% if company.city %}
+								{{ company.neighborhood ? company.neighborhood ~ ' - ' }}{{ company.city }}/{{ company.state }}<br>
+							{% endif %}
+
+							{% if company.email or company.phone %}
+								{{ company.email }}{{ (company.email and company.phone) ? ' | ' }}{{ company.phone }}
+							{% endif %}
+						</div>
+					</td>
+					<td class="text-right" style="vertical-align: top;">
+						<h1 style="margin: 0; color: #444; font-size: 24px;">ORÇAMENTO</h1>
+						<div style="margin: 10px 0;">
+							<span class="status-badge" style="background-color: {{ quote.statusColor }}">
+								{{ quote.statusLabel }}
+							</span>
+						</div>
+						<strong>Nº
+							{{ quote.code }}</strong><br>
+						<span>Emissão:
+							{{ quote.date|date('d/m/Y') }}</span>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<table class="info-grid" style="border-spacing: 0;">
+			<tr>
+				<td class="info-box" style="border-right: none;">
+					<strong style="color: #666; font-size: 9px;">DADOS DO CLIENTE</strong><br>
+					<strong>{{ customer.name }}</strong><br>
+
+					{% if customer.document %}
+						Doc:
+						{{ customer.document }}<br>
+					{% endif %}
+
+					{% if customer.email %}
+						{{ customer.email }}<br>
+					{% endif %}
+
+					{% if customer.phone %}
+						{{ customer.phone }}
+					{% endif %}
+				</td>
+				<td class="info-box">
+					<strong style="color: #666; font-size: 9px;">ENDEREÇO</strong><br>
+					{% if customer.street %}
+						{{ customer.street }}{{ customer.number ? ', ' ~ customer.number }}<br>
+						{% if customer.neighborhood %}
+							{{ customer.neighborhood }}<br>
+						{% endif %}
+						{{ customer.city }}{{ customer.state ? ' - ' ~ customer.state }}<br>
+						{% if customer.zipCode %}
+							CEP:
+							{{ customer.zipCode }}
+						{% endif %}
+					{% else %}
+						<span style="color: #ccc;">Endereço não informado</span>
+					{% endif %}
+				</td>
+			</tr>
+		</table>
+
+		{% if quote.description %}
+			<div style="margin-bottom: 20px;">
+				<strong style="font-size: 10px; color: #666;">DESCRIÇÃO / OBJETIVO:</strong><br>
+				{{ quote.description|nl2br }}
+			</div>
+		{% endif %}
+
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Item / Descrição</th>
+					<th class="text-right" style="width: 60px;">Qtd</th>
+					<th class="text-right" style="width: 100px;">Unitário</th>
+					<th class="text-right" style="width: 100px;">Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for item in quote.items %}
+					<tr>
+						<td>{{ item.description }}</td>
+						<td class="text-right">{{ item.quantity }}</td>
+						<td class="text-right">R$
+							{{ (item.unitPrice / 100)|number_format(2, ',', '.') }}</td>
+						<td class="text-right">R$
+							{{ (item.totalPrice / 100)|number_format(2, ',', '.') }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+		<div class="totals">
+			<div class="totals-row">
+				<span>Subtotal:</span>
+				<span style="float: right;">R$
+					{{ (quote.subtotal / 100)|number_format(2, ',', '.') }}</span>
+			</div>
+
+			{% if quote.discountValue > 0 %}
+				<div class="totals-row" style="color: #c00;">
+					<span>Desconto ({{ quote.discountType == 'percentage' ? '%' : 'Fixo' }}):</span>
+					<span style="float: right;">- R$
+						{{ (quote.discountValue / 100)|number_format(2, ',', '.') }}</span>
+				</div>
+			{% endif %}
+
+			{% if quote.shippingValue > 0 %}
+				<div class="totals-row">
+					<span>Frete:</span>
+					<span style="float: right;">R$
+						{{ (quote.shippingValue / 100)|number_format(2, ',', '.') }}</span>
+				</div>
+			{% endif %}
+
+			<div class="totals-row grand-total">
+				<span>TOTAL:</span>
+				<span style="float: right;">R$
+					{{ (quote.totalAmount / 100)|number_format(2, ',', '.') }}</span>
+			</div>
+		</div>
+
+		<div style="clear: both;"></div>
+
+		{% if quote.notes %}
+			<div style="margin-top: 40px; page-break-inside: avoid;">
+				<strong style="font-size: 10px; color: #666;">OBSERVAÇÕES E CONDIÇÕES:</strong><br>
+				<div style="font-size: 10px; color: #555; background: #fdfdfd; padding: 10px; border: 1px solid #eee;">
+					{{ quote.notes|nl2br }}
+				</div>
+			</div>
+		{% endif %}
+
+		<div class="footer">
+			{{ company.tradingName ?: company.name }}
+			{% if company.email %}
+				-
+				{{ company.email }}
+			{% endif %}<br>
+			Este orçamento tem validade até
+			<strong>{{ quote.dueDate|date('d/m/Y') }}</strong>.
+		</div>
+
+	</body>
+</html>
