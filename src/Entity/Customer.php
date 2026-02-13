@@ -82,9 +82,16 @@ class Customer
     #[ORM\OneToMany(targetEntity: Transaction::class, mappedBy: 'customer')]
     private Collection $transactions;
 
+    /**
+     * @var Collection<int, Quote>
+     */
+    #[ORM\OneToMany(targetEntity: Quote::class, mappedBy: 'customer')]
+    private Collection $quotes;
+
     public function __construct()
     {
         $this->transactions = new ArrayCollection();
+        $this->quotes = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -356,6 +363,36 @@ class Customer
             // set the owning side to null (unless already changed)
             if ($transaction->getCustomer() === $this) {
                 $transaction->setCustomer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Quote>
+     */
+    public function getQuote(): Collection
+    {
+        return $this->quotes;
+    }
+
+    public function addQuote(Quote $quotes): static
+    {
+        if (!$this->quotes->contains($quotes)) {
+            $this->quotes->add($quotes);
+            $quotes->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeQuote(Quote $quotes): static
+    {
+        if ($this->quotes->removeElement($quotes)) {
+            // set the owning side to null (unless already changed)
+            if ($quotes->getCustomer() === $this) {
+                $quotes->setCustomer(null);
             }
         }
 

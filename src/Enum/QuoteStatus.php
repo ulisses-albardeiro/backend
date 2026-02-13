@@ -2,7 +2,7 @@
 
 namespace App\Enum;
 
-enum EstimateStatus: string
+enum QuoteStatus: string
 {
     case DRAFT = 'draft';
     case PENDING = 'pending';
