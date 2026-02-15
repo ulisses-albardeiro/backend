@@ -26,17 +26,3 @@ class QuoteInputDTO
     #[Assert\Count(min: 1)]
     public array $items = [];
 }
-
-class QuoteItemInputDTO
-{
-    #[Assert\NotBlank]
-    public string $description;
-
-    #[Assert\NotBlank]
-    #[Assert\Positive]
-    public string $quantity;
-
-    #[Assert\NotBlank]
-    #[Assert\PositiveOrZero]
-    public int $unit_price;
-}

@@ -89,11 +89,18 @@ class Company
     #[ORM\OneToMany(targetEntity: Transaction::class, mappedBy: 'company', orphanRemoval: true)]
     private Collection $transactions;
 
+    /**
+     * @var Collection<int, Quote>
+     */
+    #[ORM\OneToMany(targetEntity: Quote::class, mappedBy: 'company', orphanRemoval: true)]
+    private Collection $quotes;
+
     public function __construct()
     {
         $this->customers = new ArrayCollection();
         $this->categories = new ArrayCollection();
         $this->transactions = new ArrayCollection();
+        $this->quotes = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -413,6 +420,36 @@ class Company
             // set the owning side to null (unless already changed)
             if ($transaction->getCompany() === $this) {
                 $transaction->setCompany(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Quote>
+     */
+    public function getQuotes(): Collection
+    {
+        return $this->quotes;
+    }
+
+    public function addQuote(Quote $quote): static
+    {
+        if (!$this->quotes->contains($quote)) {
+            $this->quotes->add($quote);
+            $quote->setCompany($this);
+        }
+
+        return $this;
+    }
+
+    public function removeQuote(Quote $quote): static
+    {
+        if ($this->quotes->removeElement($quote)) {
+            // set the owning side to null (unless already changed)
+            if ($quote->getCompany() === $this) {
+                $quote->setCompany(null);
             }
         }
 

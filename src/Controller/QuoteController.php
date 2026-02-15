@@ -21,8 +21,8 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 final class QuoteController extends AbstractController
 {
     public function __construct(
-        private LoggerInterface $logger,
         private QuoteService $service,
+        private LoggerInterface $logger,
     ) {}
 
     #[Route('', name: 'index', methods: ['GET'])]
@@ -33,7 +33,7 @@ final class QuoteController extends AbstractController
         return $this->json($this->service->listAllByCompany($user->getCompany()));
     }
 
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $id): JsonResponse
     {
         try {

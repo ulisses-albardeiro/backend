@@ -32,6 +32,7 @@ class QuoteMapper
             'company' => $company
         ]);
         
+        $quote->setCompany($company);
         $quote->setCustomer($customer);
         $quote->setDate(new \DateTimeImmutable($dto->date));
         $quote->setDueDate(new \DateTimeImmutable($dto->due_date));
@@ -75,6 +76,7 @@ class QuoteMapper
         return new QuoteOutputDTO(
             id: $quote->getId(),
             code: $quote->getCode(),
+            companyId: $quote->getCompany()->getId(),
             customerId: $quote->getCustomer()->getId(),
             customerName: $quote->getCustomer()->getName(),
             status: $quote->getStatus()->value,

@@ -63,6 +63,10 @@ class Quote
     #[ORM\OneToMany(mappedBy: 'quote', targetEntity: QuoteItem::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $quoteItems;
 
+    #[ORM\ManyToOne(inversedBy: 'quotes')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Company $company = null;
+
     public function __construct()
     {
         $this->quoteItems = new ArrayCollection();
@@ -278,5 +282,17 @@ class Quote
         }
 
         $this->totalAmount = $subtotal - $discount + ($this->shippingValue ?? 0);
+    }
+
+    public function getCompany(): ?Company
+    {
+        return $this->company;
+    }
+
+    public function setCompany(?Company $company): static
+    {
+        $this->company = $company;
+
+        return $this;
     }
 }
