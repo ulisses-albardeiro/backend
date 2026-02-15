@@ -35,7 +35,7 @@ class QuoteService
         return array_map(fn($q) => $this->mapper->toOutputDTO($q), $quotes);
     }
 
-    public function getByIdAndCompany(int $id, Company $company): Quote
+    public function getByIdAndCompany(int $id, Company $company): QuoteOutputDTO
     {
         $quote = $this->repository->findByIdAndCompany($id, $company);
 
@@ -43,7 +43,7 @@ class QuoteService
             throw new NotFoundHttpException('QUOTE_NOT_FOUND');
         }
 
-        return $quote;
+        return $this->mapper->toOutputDTO($quote);
     }
 
     public function create(QuoteInputDTO $dto, Company $company): QuoteOutputDTO
@@ -58,17 +58,21 @@ class QuoteService
         return $this->mapper->toOutputDTO($quote);
     }
 
-    public function update(int $id, QuoteInputDTO $dto, Company $company): Quote
+    public function update(int $id, QuoteInputDTO $dto, Company $company): QuoteOutputDTO
     {
-        $quote = $this->getByIdAndCompany($id, $company);
+        $quote = $this->repository->findByIdAndCompany($id, $company);
 
-        $this->mapper->toEntity($dto, $company, $quote);
+        if (!$quote) {
+            throw new NotFoundHttpException('QUOTE_NOT_FOUND');
+        }
+
+       $this->mapper->toEntity($dto, $company, $quote);
 
         $quote->recalculateTotals();
 
         $this->em->flush();
 
-        return $quote;
+        return $this->mapper->toOutputDTO($quote);
     }
 
     public function delete(int $id, Company $company): void
@@ -81,7 +85,12 @@ class QuoteService
 
     public function getQuoteDocument(int $id, Company $company): QuoteDocument
     {
-        $quoteEntity = $this->getByIdAndCompany($id, $company);
+        $quoteEntity = $this->repository->findByIdAndCompany($id, $company);
+
+        if (!$quoteEntity) {
+            throw new NotFoundHttpException('QUOTE_NOT_FOUND');
+        }
+
         $quoteDto = $this->mapper->toOutputDTO($quoteEntity);
         $logoBase64 = $this->fileService->getBase64($this->getSubDir($company), $company->getLogo());
 
