@@ -12,7 +12,9 @@ class PriceListInputDTO
 
     public ?string $description = null;
 
-    /** * @var PriceListItemInputDTO[] */
+    /** 
+     *  @var PriceListItemInputDTO[] 
+     */
     #[Assert\Valid]
     #[Assert\Count(min: 1)]
     public array $items = [];

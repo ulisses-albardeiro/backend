@@ -27,10 +27,11 @@ class PriceListMapper
         }
 
         foreach ($dto->items as $itemDto) {
+            /** @var PriceListItemInputDTO $itemDto */
             $item = new PriceListItem();
             $item->setName($itemDto->name);
             $item->setQuantity($itemDto->quantity);
-            $item->setUnit(UnitType::from($itemDto->unit));
+            $item->setUnit($itemDto->unit);
 
             $priceList->addPriceListItem($item);
         }

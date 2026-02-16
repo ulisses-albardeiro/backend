@@ -20,7 +20,7 @@ class PriceListItem
     private ?string $name = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?Number $quantity = null;
+    private ?string $quantity = null;
 
     #[ORM\Column(enumType: UnitType::class)]
     private ?UnitType $unit = null;
@@ -46,12 +46,12 @@ class PriceListItem
         return $this;
     }
 
-    public function getQuantity(): ?Number
+    public function getQuantity(): ?string
     {
         return $this->quantity;
     }
 
-    public function setQuantity(Number $quantity): static
+    public function setQuantity(string $quantity): static
     {
         $this->quantity = $quantity;
 
