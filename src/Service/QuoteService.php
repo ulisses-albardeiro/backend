@@ -66,7 +66,7 @@ class QuoteService
             throw new NotFoundHttpException('QUOTE_NOT_FOUND');
         }
 
-       $this->mapper->toEntity($dto, $company, $quote);
+        $this->mapper->toEntity($dto, $company, $quote);
 
         $quote->recalculateTotals();
 
@@ -77,7 +77,11 @@ class QuoteService
 
     public function delete(int $id, Company $company): void
     {
-        $quote = $this->getByIdAndCompany($id, $company);
+        $quote = $this->repository->findByIdAndCompany($id, $company);
+
+        if (!$quote) {
+            return;
+        }
 
         $this->em->remove($quote);
         $this->em->flush();

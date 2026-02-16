@@ -17,7 +17,7 @@ class QuoteRepository extends ServiceEntityRepository
         parent::__construct($registry, Quote::class);
     }
 
-    public function findByIdAndCompany(int $id, Company $company): Quote
+    public function findByIdAndCompany(int $id, Company $company): ?Quote
     {
         $quote = $this->createQueryBuilder('q')
             ->join('q.customer', 'c')
