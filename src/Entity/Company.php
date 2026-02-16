@@ -101,6 +101,12 @@ class Company
     #[ORM\OneToMany(targetEntity: Receipt::class, mappedBy: 'company', orphanRemoval: true)]
     private Collection $receipts;
 
+    /**
+     * @var Collection<int, PriceList>
+     */
+    #[ORM\OneToMany(targetEntity: PriceList::class, mappedBy: 'company', orphanRemoval: true)]
+    private Collection $priceLists;
+
     public function __construct()
     {
         $this->customers = new ArrayCollection();
@@ -108,6 +114,7 @@ class Company
         $this->transactions = new ArrayCollection();
         $this->quotes = new ArrayCollection();
         $this->receipts = new ArrayCollection();
+        $this->priceLists = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -500,5 +507,35 @@ class Company
         }
 
         return '';
+    }
+
+    /**
+     * @return Collection<int, PriceList>
+     */
+    public function getPriceLists(): Collection
+    {
+        return $this->priceLists;
+    }
+
+    public function addPriceList(PriceList $priceList): static
+    {
+        if (!$this->priceLists->contains($priceList)) {
+            $this->priceLists->add($priceList);
+            $priceList->setCompany($this);
+        }
+
+        return $this;
+    }
+
+    public function removePriceList(PriceList $priceList): static
+    {
+        if ($this->priceLists->removeElement($priceList)) {
+            // set the owning side to null (unless already changed)
+            if ($priceList->getCompany() === $this) {
+                $priceList->setCompany(null);
+            }
+        }
+
+        return $this;
     }
 }
