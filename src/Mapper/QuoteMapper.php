@@ -5,7 +5,6 @@ namespace App\Mapper;
 use App\Entity\Quote;
 use App\Entity\Company;
 use App\Entity\QuoteItem;
-use App\Enum\QuoteStatus;
 use App\Enum\DiscountType;
 use App\DTO\Request\QuoteInputDTO;
 use App\DTO\Response\QuoteOutputDTO;
@@ -29,8 +28,8 @@ class QuoteMapper
         
         $quote->setCompany($company);
         $quote->setCustomer($customer);
-        $quote->setDate(new \DateTimeImmutable($dto->date));
-        $quote->setDueDate(new \DateTimeImmutable($dto->due_date));
+        $quote->setDate($dto->date);
+        $quote->setDueDate($dto->due_date);
         $quote->setDescription($dto->description);
         $quote->setNotes($dto->notes);
         
@@ -77,8 +76,8 @@ class QuoteMapper
             status: $quote->getStatus()->value,
             statusLabel: $quote->getStatus()->getLabel(),
             statusColor: $quote->getStatus()->getColor(),
-            date: $quote->getDate()->format('Y-m-d'),
-            dueDate: $quote->getDueDate()->format('Y-m-d'),
+            date: $quote->getDate(),
+            dueDate: $quote->getDueDate(),
             subtotal: $quote->getSubtotal(),
             discountType: $quote->getDiscountType()->value,
             discountValue: $quote->getDiscountValue(),

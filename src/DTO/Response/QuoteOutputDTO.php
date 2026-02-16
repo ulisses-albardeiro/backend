@@ -2,6 +2,8 @@
 
 namespace App\DTO\Response;
 
+use DateTimeImmutable;
+
 readonly class QuoteOutputDTO
 {
     /**
@@ -16,8 +18,8 @@ readonly class QuoteOutputDTO
         public string $status,
         public string $statusLabel,
         public string $statusColor,
-        public string $date,
-        public string $dueDate,
+        public DateTimeImmutable $date,
+        public DateTimeImmutable $dueDate,
         public int $subtotal,
         public string $discountType,
         public ?int $discountValue,

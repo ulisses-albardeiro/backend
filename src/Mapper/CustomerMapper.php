@@ -55,8 +55,8 @@ class CustomerMapper
             state: $customer->getState(),
             status: $customer->isStatus(),
             notes: $customer->getNotes(),
-            createdAt: $customer->getCreatedAt()?->format('Y-m-d H:i:s'),
-            updatedAt: $customer->getUpdatedAt()?->format('Y-m-d H:i:s'),
+            createdAt: $customer->getCreatedAt(),
+            updatedAt: $customer->getUpdatedAt(),
         );
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\DTO\Response;
 
+use DateTimeImmutable;
+
 readonly class CustomerOutputDTO
 {
     public function __construct(
@@ -23,7 +25,7 @@ readonly class CustomerOutputDTO
         public ?string $state,
         public bool $status,
         public ?string $notes,
-        public string $createdAt,
-        public ?string $updatedAt,
+        public DateTimeImmutable $createdAt,
+        public ?DateTimeImmutable $updatedAt,
     ) {}
 }

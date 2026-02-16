@@ -2,6 +2,7 @@
 
 namespace App\DTO\Request;
 
+use DateTimeImmutable;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class QuoteInputDTO
@@ -10,10 +11,10 @@ class QuoteInputDTO
     public int $customer_id;
 
     #[Assert\NotBlank]
-    public string $date;
+    public DateTimeImmutable $date;
 
     #[Assert\NotBlank]
-    public string $due_date;
+    public DateTimeImmutable $due_date;
 
     public string $discount_type = 'none';
     public int $discount_value = 0;

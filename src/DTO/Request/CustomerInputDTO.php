@@ -18,7 +18,7 @@ readonly class CustomerInputDTO
         #[Assert\Length(max: 255)]
         public ?string $tradingName = null,
 
-        #[Assert\Length(exactly: 14)]
+        #[Assert\Length(min: 11, max: 14)]
         public ?string $document = null,
 
         #[Assert\Length(max: 20)]

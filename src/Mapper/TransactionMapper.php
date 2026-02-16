@@ -41,7 +41,7 @@ class TransactionMapper
             description: $transaction->getDescription(),
             amount: $transaction->getAmount(),
             amountFormatted: $transaction->getAmount() / 100,
-            date: $transaction->getDate()->format('Y-m-d'),
+            date: $transaction->getDate(),
             type: $transaction->getType()->value,
             typeLabel: $transaction->getType()->getLabel(),
             status: $transaction->getStatus()->value,
@@ -51,7 +51,7 @@ class TransactionMapper
             categoryColor: $transaction->getCategory()->getColor(),
             customerId: $transaction->getCustomer()?->getId(),
             customerName: $transaction->getCustomer()?->getName(),
-            createdAt: $transaction->getDate()->format('Y-m-d H:i:s'),
+            createdAt: $transaction->getDate(),
         );
     }
 }
