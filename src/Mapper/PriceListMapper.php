@@ -31,7 +31,7 @@ class PriceListMapper
             $item->setName($itemDto->name);
             $item->setQuantity($itemDto->quantity);
             $item->setUnit(UnitType::from($itemDto->unit));
-            
+
             $priceList->addPriceListItem($item);
         }
 

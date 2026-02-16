@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Lista de Materiais - {{ priceList.title }}</title>
+        <style>
+            body {
+                font-family: 'Helvetica', 'Arial', sans-serif;
+                color: #333;
+                font-size: 11px;
+                line-height: 1.5;
+                margin: 0;
+                padding: 0;
+            }
+            .header {
+                border-bottom: 3px solid #4f46e5; /* Indigo do tema */
+                padding-bottom: 20px;
+                margin-bottom: 20px;
+            }
+            .logo {
+                max-width: 150px;
+                max-height: 80px;
+                margin-bottom: 10px;
+            }
+            .company-details {
+                font-size: 10px;
+                color: #666;
+            }
+            .table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            .table th {
+                background-color: #f3f4f6;
+                text-align: left;
+                padding: 10px 8px;
+                border-bottom: 2px solid #e5e7eb;
+                color: #374151;
+                text-transform: uppercase;
+                font-size: 10px;
+                letter-spacing: 0.05em;
+            }
+            .table td {
+                padding: 10px 8px;
+                border-bottom: 1px solid #f3f4f6;
+            }
+            .text-right { text-align: right; }
+            .text-center { text-align: center; }
+            
+            .category-badge {
+                display: inline-block;
+                padding: 2px 6px;
+                background: #eef2ff;
+                color: #4338ca;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 9px;
+            }
+
+            .description-box {
+                background: #f9fafb;
+                padding: 15px;
+                border-radius: 8px;
+                border: 1px solid #f3f4f6;
+                margin-bottom: 20px;
+            }
+            
+            .footer {
+                position: fixed;
+                bottom: -20px;
+                width: 100%;
+                text-align: center;
+                font-size: 9px;
+                color: #9ca3af;
+                border-top: 1px solid #f3f4f6;
+                padding-top: 10px;
+            }
+            
+            .quantity-cell {
+                font-weight: bold;
+                color: #111827;
+                font-size: 12px;
+            }
+
+            .unit-label {
+                color: #6b7280;
+                font-size: 10px;
+                font-weight: normal;
+            }
+        </style>
+    </head>
+    <body>
+
+        <div class="header">
+            <table style="width: 100%;">
+                <tr>
+                    <td style="width: 60%;">
+                        {% if company.logo %}
+                            <img src="{{ company.logo }}" class="logo">
+                        {% endif %}
+                        <div class="company-details">
+                            <strong>{{ company.tradingName ?: company.name }}</strong><br>
+                            {% if company.email or company.phone %}
+                                {{ company.email }}{{ (company.email and company.phone) ? ' | ' }}{{ company.phone }}
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="text-right" style="vertical-align: top;">
+                        <h1 style="margin: 0; color: #4f46e5; font-size: 20px;">LISTA DE MATERIAIS</h1>
+                        <p style="margin: 5px 0; color: #6b7280;">Emissão: {{ priceList.createdAt|date('d/m/Y') }}</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <h2 style="font-size: 18px; margin-bottom: 5px; color: #111827;">{{ priceList.title }}</h2>
+            {% if priceList.description %}
+                <div class="description-box">
+                    <strong style="font-size: 9px; color: #6b7280; text-transform: uppercase;">Informações Gerais:</strong><br>
+                    <div style="margin-top: 5px; color: #4b5563;">
+                        {{ priceList.description|nl2br }}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 70%;">Descrição do Material / Serviço</th>
+                    <th class="text-right" style="width: 30%;">Quantidade Prevista</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in priceList.items %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: bold; font-size: 11px;">{{ item.name }}</div>
+                        </td>
+                        <td class="text-right quantity-cell">
+                            {{ item.quantity }}
+                            <span class="unit-label">{{ item.unitLabel }}</span>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="2" class="text-center" style="padding: 40px; color: #9ca3af;">
+                            Nenhum item cadastrado nesta lista.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="margin-top: 50px; border-top: 1px dashed #e5e7eb; padding-top: 20px; page-break-inside: avoid;">
+            <div style="color: #6b7280; font-size: 10px;">
+                <strong>Nota Técnica:</strong> As quantidades acima são estimadas com base nas informações fornecidas. Variações podem ocorrer durante a execução ou instalação.
+            </div>
+        </div>
+
+        <div class="footer">
+            Documento gerado por {{ company.name }} em {{ "now"|date("d/m/Y H:i") }}
+        </div>
+
+    </body>
+</html>
