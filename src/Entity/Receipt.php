@@ -56,10 +56,19 @@ class Receipt
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\PrePersist]
-    public function setCreatedAtValue(): void
+    public function setInitialValues(): void
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->status = ReceiptStatus::ACTIVE;
+        if ($this->status === null) {
+            $this->status = ReceiptStatus::ACTIVE;
+        }
+
+        if ($this->code === null) {
+            $year = date('dmY');
+            $uniquePart = strtoupper(substr(uniqid(), -4));
+
+            $this->code = sprintf('REC-%s-%s', $year, $uniquePart);
+        }
     }
 
     #[ORM\PreUpdate]

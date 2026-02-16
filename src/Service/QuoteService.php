@@ -96,20 +96,11 @@ class QuoteService
         }
 
         $quoteDto = $this->mapper->toOutputDTO($quoteEntity);
-        $logoBase64 = $this->fileService->getBase64($this->getSubDir($company), $company->getLogo());
+        $logoBase64 = $this->fileService->getBase64($company->getSubDir('/logo'), $company->getLogo());
 
         $companyDto = $this->companyMapper->toOutputDTO($company, $logoBase64);
         $customerDto = $this->customerMapper->toOutputDTO($quoteEntity->getCustomer());
 
         return new QuoteDocument($quoteDto, $companyDto, $customerDto);
-    }
-
-    private function getSubDir(Company $company): string
-    {
-        if ($company->getCreatedAt()) {
-            return 'company_' . md5($company->getCreatedAt()->format('U')) . '/logo';
-        }
-
-        return '';
     }
 }

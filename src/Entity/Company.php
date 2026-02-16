@@ -492,4 +492,13 @@ class Company
 
         return $this;
     }
+
+    public function getSubDir(?string $subDir): string
+    {
+        if ($this->getCreatedAt()) {
+            return 'company_' . md5($this->getCreatedAt()->format('U')) . $subDir;
+        }
+
+        return '';
+    }
 }

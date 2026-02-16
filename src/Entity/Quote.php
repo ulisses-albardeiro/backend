@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: QuoteRepository::class)]
 class Quote
 {
@@ -77,6 +78,17 @@ class Quote
     {
         $this->quoteItems = new ArrayCollection();
         $this->receipts = new ArrayCollection();
+    }
+
+    #[ORM\PrePersist]
+    public function setInitialValues(): void
+    {
+        if ($this->code === null) {
+            $year = date('dmY');
+            $uniquePart = strtoupper(substr(uniqid(), -4));
+
+            $this->code = sprintf('REC-%s-%s', $year, $uniquePart);
+        }
     }
 
     public function getId(): ?int

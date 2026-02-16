@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Recibo {{ receipt.code }}</title>
+        <style>
+            body {
+                font-family: 'Helvetica', 'Arial', sans-serif;
+                color: #333;
+                font-size: 11px;
+                line-height: 1.4;
+            }
+            .header {
+                border-bottom: 2px solid #eee;
+                padding-bottom: 20px;
+                margin-bottom: 20px;
+            }
+            .logo {
+                max-width: 150px;
+                max-height: 80px;
+                margin-bottom: 10px;
+            }
+            .company-details {
+                font-size: 10px;
+                color: #666;
+            }
+            .info-grid {
+                width: 100%;
+                margin-bottom: 30px;
+                border-spacing: 0;
+            }
+            .info-box {
+                border: 1px solid #eee;
+                padding: 10px;
+                vertical-align: top;
+                width: 50%;
+            }
+            .receipt-body {
+                background-color: #fcfcfc;
+                border: 1px solid #eee;
+                padding: 30px;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+            .amount-box {
+                font-size: 28px;
+                font-weight: bold;
+                color: #000;
+                margin: 20px 0;
+                padding: 15px;
+                border: 2px dashed #ddd;
+                display: inline-block;
+            }
+            .quittance-text {
+                font-size: 14px;
+                line-height: 1.6;
+                color: #444;
+                margin: 20px 0;
+                text-align: justify;
+            }
+            .text-right {
+                text-align: right;
+            }
+
+            .footer {
+                position: fixed;
+                bottom: -20px;
+                width: 100%;
+                text-align: center;
+                font-size: 9px;
+                color: #999;
+                border-top: 1px solid #eee;
+                padding-top: 5px;
+            }
+            .signature-area {
+                margin-top: 50px;
+                text-align: center;
+            }
+            .signature-line {
+                width: 250px;
+                border-top: 1px solid #333;
+                margin: 0 auto 5px auto;
+            }
+        </style>
+    </head>
+    <body>
+
+        <div class="header">
+            <table style="width: 100%;">
+                <tr>
+                    <td style="width: 60%;">
+                        {% if company.logo %}
+                            <img src="{{ company.logo }}" class="logo">
+                        {% endif %}
+                        <div class="company-details">
+                            <strong>{{ company.tradingName ?: company.name }}</strong><br>
+                            {% if company.registrationNumber %}CNPJ: {{ company.registrationNumber }}<br>{% endif %}
+                            {% if company.street %}
+                                {{ company.street }}{{ company.number ? ', ' ~ company.number }}<br>
+                                {{ company.city }}/{{ company.state }}
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="text-right" style="vertical-align: top;">
+                        <h1 style="margin: 0; color: #444; font-size: 24px;">RECIBO</h1>
+                        <strong>Nº {{ receipt.code }}</strong><br>
+                        <span>Data de Pagamento: {{ receipt.paymentDate|date('d/m/Y') }}</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="receipt-body">
+            <div style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 1px;">Valor Recebido</div>
+            <div class="amount-box">
+                R$ {{ (receipt.amount / 100)|number_format(2, ',', '.') }}
+            </div>
+
+            <div class="quittance-text">
+                Recebemos de <strong>{{ customer.name }}</strong>, 
+                inscrito sob o documento <strong>{{ customer.document ?: 'N/I' }}</strong>, 
+                a importância de <strong>R$ {{ (receipt.amount / 100)|number_format(2, ',', '.') }}</strong> 
+                referente a <strong>{{ receipt.description }}</strong>.
+                {% if receipt.quoteId %}
+                    (Referente ao Orçamento nº {{ receipt.code }})
+                {% endif %}
+            </div>
+
+            <table style="width: 100%; margin-top: 20px; font-size: 10px;">
+                <tr>
+                    <td style="text-align: left;"><strong>FORMA DE PAGAMENTO:</strong> {{ receipt.paymentMethodLabel }}</td>
+                    <td style="text-align: right;"><strong>DATA DE EMISSÃO:</strong> {{ receipt.createdAt|date('d/m/Y H:i') }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <table class="info-grid">
+            <tr>
+                <td class="info-box" style="border-right: none;">
+                    <strong style="color: #666; font-size: 9px;">EMITIDO POR</strong><br>
+                    <strong>{{ company.name }}</strong><br>
+                    {{ company.email }}<br>
+                    {{ company.phone }}
+                </td>
+                <td class="info-box">
+                    <strong style="color: #666; font-size: 9px;">NOTAS ADICIONAIS</strong><br>
+                    <span style="font-size: 10px; color: #555;">
+                        {{ receipt.notes ?: 'Nenhuma observação adicional.' }}
+                    </span>
+                </td>
+            </tr>
+        </table>
+
+        <div class="signature-area">
+            <div class="signature-line"></div>
+            <strong>{{ company.tradingName ?: company.name }}</strong><br>
+            <span style="font-size: 9px; color: #666;">Documento emitido eletronicamente</span>
+        </div>
+
+        <div class="footer">
+            Este recibo serve como comprovante de quitação para os fins descritos acima.
+            <br>Gerado em {{ "now"|date('d/m/Y H:i') }}
+        </div>
+
+    </body>
+</html>

@@ -22,11 +22,6 @@ class QuoteMapper
     {
         $quote = $quote ?? new Quote();
 
-        if (!$quote->getId()) {
-            $quote->setCode($this->generateCode());
-            $quote->setStatus(QuoteStatus::PENDING);
-        }
-
         $customer = $this->customerRepository->findOneBy([
             'id' => $dto->customer_id,
             'company' => $company
@@ -93,10 +88,5 @@ class QuoteMapper
             notes: $quote->getNotes(),
             items: $items
         );
-    }
-
-    private function generateCode(): string
-    {
-        return 'ORC-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
     }
 }
