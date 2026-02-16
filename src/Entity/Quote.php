@@ -67,9 +67,16 @@ class Quote
     #[ORM\JoinColumn(nullable: false)]
     private ?Company $company = null;
 
+    /**
+     * @var Collection<int, Receipt>
+     */
+    #[ORM\OneToMany(targetEntity: Receipt::class, mappedBy: 'quote')]
+    private Collection $receipts;
+
     public function __construct()
     {
         $this->quoteItems = new ArrayCollection();
+        $this->receipts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -292,6 +299,36 @@ class Quote
     public function setCompany(?Company $company): static
     {
         $this->company = $company;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Receipt>
+     */
+    public function getReceipts(): Collection
+    {
+        return $this->receipts;
+    }
+
+    public function addReceipt(Receipt $receipt): static
+    {
+        if (!$this->receipts->contains($receipt)) {
+            $this->receipts->add($receipt);
+            $receipt->setQuote($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReceipt(Receipt $receipt): static
+    {
+        if ($this->receipts->removeElement($receipt)) {
+            // set the owning side to null (unless already changed)
+            if ($receipt->getQuote() === $this) {
+                $receipt->setQuote(null);
+            }
+        }
 
         return $this;
     }

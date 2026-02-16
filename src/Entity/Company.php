@@ -95,12 +95,19 @@ class Company
     #[ORM\OneToMany(targetEntity: Quote::class, mappedBy: 'company', orphanRemoval: true)]
     private Collection $quotes;
 
+    /**
+     * @var Collection<int, Receipt>
+     */
+    #[ORM\OneToMany(targetEntity: Receipt::class, mappedBy: 'company', orphanRemoval: true)]
+    private Collection $receipts;
+
     public function __construct()
     {
         $this->customers = new ArrayCollection();
         $this->categories = new ArrayCollection();
         $this->transactions = new ArrayCollection();
         $this->quotes = new ArrayCollection();
+        $this->receipts = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -450,6 +457,36 @@ class Company
             // set the owning side to null (unless already changed)
             if ($quote->getCompany() === $this) {
                 $quote->setCompany(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Receipt>
+     */
+    public function getReceipts(): Collection
+    {
+        return $this->receipts;
+    }
+
+    public function addReceipt(Receipt $receipt): static
+    {
+        if (!$this->receipts->contains($receipt)) {
+            $this->receipts->add($receipt);
+            $receipt->setCompany($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReceipt(Receipt $receipt): static
+    {
+        if ($this->receipts->removeElement($receipt)) {
+            // set the owning side to null (unless already changed)
+            if ($receipt->getCompany() === $this) {
+                $receipt->setCompany(null);
             }
         }
 
