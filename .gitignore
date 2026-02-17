@@ -21,3 +21,6 @@
 /phpunit.xml
 /.phpunit.cache/
 ###< phpunit/phpunit ###
+
+.htaccess
+index.php
