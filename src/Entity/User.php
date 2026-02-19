@@ -49,6 +49,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'owner', cascade: ['persist', 'remove'])]
     private ?Company $company = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $googleId = null;
+
     public function __construct()
     {
         $this->passwordResetRequests = new ArrayCollection();
@@ -196,6 +199,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         $this->company = $company;
+
+        return $this;
+    }
+
+    public function getGoogleId(): ?string
+    {
+        return $this->googleId;
+    }
+
+    public function setGoogleId(?string $googleId): static
+    {
+        $this->googleId = $googleId;
 
         return $this;
     }
