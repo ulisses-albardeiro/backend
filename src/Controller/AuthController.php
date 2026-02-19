@@ -59,6 +59,7 @@ final class AuthController extends AbstractController
                 }
 
                 $user->setPassword(bin2hex(random_bytes(16)));
+                $user->setRoles(['ROLE_USER']);
 
                 $this->em->persist($user);
                 $this->em->flush();
