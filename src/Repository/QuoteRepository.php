@@ -30,4 +30,9 @@ class QuoteRepository extends ServiceEntityRepository
 
         return $quote;
     }
+
+    public function countAll(): int
+    {
+        return $this->count([]);
+    }
 }

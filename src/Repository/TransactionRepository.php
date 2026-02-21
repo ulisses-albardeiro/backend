@@ -30,9 +30,14 @@ class TransactionRepository extends ServiceEntityRepository
 
         if ($status) {
             $qb->andWhere('t.status = :status')
-               ->setParameter('status', $status);
+                ->setParameter('status', $status);
         }
 
         return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    public function countAll(): int
+    {
+        return $this->count([]);
     }
 }
