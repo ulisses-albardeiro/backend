@@ -8,7 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class QuoteInputDTO
 {
     #[Assert\NotBlank]
-    public int $customer_id;
+    public int $customerId;
 
     #[Assert\NotBlank]
     public DateTimeImmutable $date;

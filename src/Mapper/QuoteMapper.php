@@ -22,7 +22,7 @@ class QuoteMapper
         $quote = $quote ?? new Quote();
 
         $customer = $this->customerRepository->findOneBy([
-            'id' => $dto->customer_id,
+            'id' => $dto->customerId,
             'company' => $company
         ]);
         
