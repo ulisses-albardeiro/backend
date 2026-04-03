@@ -8,7 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class QuoteInputDTO
 {
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: "O campo Cliente é obrigatório")]
     public int $customerId;
 
     #[Assert\NotBlank]
