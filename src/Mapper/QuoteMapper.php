@@ -32,6 +32,7 @@ class QuoteMapper
         $quote->setDueDate($dto->due_date);
         $quote->setDescription($dto->description);
         $quote->setNotes($dto->notes);
+        $quote->setStatus($dto->status);
         
         $quote->setDiscountType(DiscountType::from($dto->discount_type));
         $quote->setDiscountValue($dto->discount_value);

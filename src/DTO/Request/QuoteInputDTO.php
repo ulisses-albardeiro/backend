@@ -2,6 +2,7 @@
 
 namespace App\DTO\Request;
 
+use App\Enum\QuoteStatus;
 use DateTimeImmutable;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -21,6 +22,9 @@ class QuoteInputDTO
     public int $shipping_value = 0;
     public ?string $description = null;
     public ?string $notes = null;
+
+    #[Assert\NotBlank(message: "O campo Status é obrigatório")]
+    public QuoteStatus $status;
 
     /** @var QuoteItemInputDTO[] */
     #[Assert\Valid]
