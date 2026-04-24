@@ -20,6 +20,7 @@ class Product
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'products')]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Company $company = null;
 
     #[ORM\ManyToOne(inversedBy: 'products')]
@@ -35,7 +36,7 @@ class Product
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(length: 100, nullable: true)]
+    #[ORM\Column(length: 100, nullable: true, unique: true)]
     private ?string $sku = null;
 
     #[ORM\Column(length: 20, nullable: true)]
@@ -99,7 +100,7 @@ class Product
         return $this->company;
     }
 
-    public function setCompany(?Company $company): static
+    public function setCompany(Company $company): static
     {
         $this->company = $company;
 
