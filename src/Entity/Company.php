@@ -107,6 +107,36 @@ class Company
     #[ORM\OneToMany(targetEntity: PriceList::class, mappedBy: 'company', orphanRemoval: true)]
     private Collection $priceLists;
 
+    /**
+     * @var Collection<int, ProductCategory>
+     */
+    #[ORM\OneToMany(targetEntity: ProductCategory::class, mappedBy: 'company', orphanRemoval: true)]
+    private Collection $productCategories;
+
+    /**
+     * @var Collection<int, Brand>
+     */
+    #[ORM\OneToMany(targetEntity: Brand::class, mappedBy: 'company', orphanRemoval: true)]
+    private Collection $brands;
+
+    /**
+     * @var Collection<int, Supplier>
+     */
+    #[ORM\OneToMany(targetEntity: Supplier::class, mappedBy: 'company', orphanRemoval: true)]
+    private Collection $suppliers;
+
+    /**
+     * @var Collection<int, Product>
+     */
+    #[ORM\OneToMany(targetEntity: Product::class, mappedBy: 'company')]
+    private Collection $products;
+
+    /**
+     * @var Collection<int, InventoryMovement>
+     */
+    #[ORM\OneToMany(targetEntity: InventoryMovement::class, mappedBy: 'company', orphanRemoval: true)]
+    private Collection $inventoryMovements;
+
     public function __construct()
     {
         $this->customers = new ArrayCollection();
@@ -115,6 +145,11 @@ class Company
         $this->quotes = new ArrayCollection();
         $this->receipts = new ArrayCollection();
         $this->priceLists = new ArrayCollection();
+        $this->productCategories = new ArrayCollection();
+        $this->brands = new ArrayCollection();
+        $this->suppliers = new ArrayCollection();
+        $this->products = new ArrayCollection();
+        $this->inventoryMovements = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -533,6 +568,156 @@ class Company
             // set the owning side to null (unless already changed)
             if ($priceList->getCompany() === $this) {
                 $priceList->setCompany(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ProductCategory>
+     */
+    public function getProductCategories(): Collection
+    {
+        return $this->productCategories;
+    }
+
+    public function addProductCategory(ProductCategory $productCategory): static
+    {
+        if (!$this->productCategories->contains($productCategory)) {
+            $this->productCategories->add($productCategory);
+            $productCategory->setCompany($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProductCategory(ProductCategory $productCategory): static
+    {
+        if ($this->productCategories->removeElement($productCategory)) {
+            // set the owning side to null (unless already changed)
+            if ($productCategory->getCompany() === $this) {
+                $productCategory->setCompany(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Brand>
+     */
+    public function getBrands(): Collection
+    {
+        return $this->brands;
+    }
+
+    public function addBrand(Brand $brand): static
+    {
+        if (!$this->brands->contains($brand)) {
+            $this->brands->add($brand);
+            $brand->setCompany($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBrand(Brand $brand): static
+    {
+        if ($this->brands->removeElement($brand)) {
+            // set the owning side to null (unless already changed)
+            if ($brand->getCompany() === $this) {
+                $brand->setCompany(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Supplier>
+     */
+    public function getSuppliers(): Collection
+    {
+        return $this->suppliers;
+    }
+
+    public function addSupplier(Supplier $supplier): static
+    {
+        if (!$this->suppliers->contains($supplier)) {
+            $this->suppliers->add($supplier);
+            $supplier->setCompany($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSupplier(Supplier $supplier): static
+    {
+        if ($this->suppliers->removeElement($supplier)) {
+            // set the owning side to null (unless already changed)
+            if ($supplier->getCompany() === $this) {
+                $supplier->setCompany(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Product>
+     */
+    public function getProducts(): Collection
+    {
+        return $this->products;
+    }
+
+    public function addProduct(Product $product): static
+    {
+        if (!$this->products->contains($product)) {
+            $this->products->add($product);
+            $product->setCompany($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProduct(Product $product): static
+    {
+        if ($this->products->removeElement($product)) {
+            // set the owning side to null (unless already changed)
+            if ($product->getCompany() === $this) {
+                $product->setCompany(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, InventoryMovement>
+     */
+    public function getInventoryMovements(): Collection
+    {
+        return $this->inventoryMovements;
+    }
+
+    public function addInventoryMovement(InventoryMovement $inventoryMovement): static
+    {
+        if (!$this->inventoryMovements->contains($inventoryMovement)) {
+            $this->inventoryMovements->add($inventoryMovement);
+            $inventoryMovement->setCompany($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInventoryMovement(InventoryMovement $inventoryMovement): static
+    {
+        if ($this->inventoryMovements->removeElement($inventoryMovement)) {
+            // set the owning side to null (unless already changed)
+            if ($inventoryMovement->getCompany() === $this) {
+                $inventoryMovement->setCompany(null);
             }
         }
 
