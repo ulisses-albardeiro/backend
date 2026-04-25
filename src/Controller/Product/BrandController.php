@@ -7,6 +7,7 @@ use App\Service\Product\BrandService;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -29,18 +30,52 @@ final class BrandController extends AbstractController
     }
 
     #[Route('', name: 'store', methods: ['POST'])]
-    public function store(#[MapRequestPayload] BrandInputDTO $dto): JsonResponse
+    public function store(
+        #[MapRequestPayload] BrandInputDTO $dto,
+        Request $request
+    ): JsonResponse {
+        try {
+            $logoFile = $request->files->get('logo');
+            /** @var User $user */
+            $user = $this->getUser();
+
+            return $this->json($this->service->create($dto, $user->getCompany(), $logoFile), 201);
+        } catch (\Exception $e) {
+            return $this->json(['message' => 'ERROR_SAVING_BRAND'], 500);
+        }
+    }
+
+    #[Route('/{id}', name: 'update', methods: ['POST'])]
+    public function update(
+        int $id,
+        #[MapRequestPayload] BrandInputDTO $dto,
+        Request $request
+    ): JsonResponse {
+        try {
+            $logoFile = $request->files->get('logo');
+            /** @var User $user */
+            $user = $this->getUser();
+
+            return $this->json($this->service->update($id, $dto, $user->getCompany(), $logoFile));
+        } catch (\Exception $e) {
+            return $this->json(['message' => $e->getMessage()], 400);
+        }
+    }
+
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    public function delete(int $id): JsonResponse
     {
         try {
             /** @var User $user */
             $user = $this->getUser();
-            return $this->json($this->service->create($dto, $user->getCompany()), 201);
+            $this->service->delete($id, $user->getCompany());
+            return $this->json(null, 204);
         } catch (\Exception $e) {
-            $this->logger->error('Failed to save brand.', [
-                'user_id' => $user->getId(),
+            $this->logger->error('Failed to delete brand.', [
+                'brand_id' => $id,
                 'error' => $e->getMessage()
             ]);
-            return $this->json(['message' => 'ERROR_SAVING_BRAND'], 500);
+            return $this->json(['message' => $e->getMessage()], 400);
         }
     }
 }

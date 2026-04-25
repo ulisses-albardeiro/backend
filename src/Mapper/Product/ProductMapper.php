@@ -33,6 +33,7 @@ class ProductMapper
         $entity->setMinStock($dto->minStock);
         $entity->setNcm($dto->ncm);
         $entity->setStatus($dto->status);
+        $entity->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')));
 
         $entity->setCategory($this->categoryRepository->find($dto->categoryId));
 

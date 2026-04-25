@@ -5,6 +5,8 @@ namespace App\Mapper\Product;
 use App\DTO\Request\Product\BrandInputDTO;
 use App\DTO\Response\Product\BrandOutputDTO;
 use App\Entity\Product\Brand;
+use DateTimeImmutable;
+use DateTimeZone;
 
 class BrandMapper
 {
@@ -14,6 +16,7 @@ class BrandMapper
         $entity->setName($dto->name);
         $entity->setLogo($dto->logo);
         $entity->setStatus($dto->status);
+        $entity->setCreatedAt(new DateTimeImmutable('now', new DateTimeZone('America/Sao_Paulo')));
 
         return $entity;
     }
