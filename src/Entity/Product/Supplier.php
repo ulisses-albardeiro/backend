@@ -7,6 +7,8 @@ use App\Enum\Product\PersonType;
 use App\Enum\Product\ProductSupplierStatus;
 use App\Repository\Product\SupplierRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: SupplierRepository::class)]
 class Supplier
@@ -37,6 +39,9 @@ class Supplier
 
     #[ORM\Column(enumType: ProductSupplierStatus::class)]
     private ?ProductSupplierStatus $status = null;
+
+    #[ORM\OneToMany(targetEntity: Product::class, mappedBy: 'supplier')]
+    private Collection $products;
 
     public function getId(): ?int
     {
@@ -125,5 +130,16 @@ class Supplier
         $this->status = $status;
 
         return $this;
+    }
+
+    public function __construct()
+    {
+        $this->products = new ArrayCollection();
+    }
+
+    /** @return Collection<int, Product> */
+    public function getProducts(): Collection
+    {
+        return $this->products;
     }
 }

@@ -50,8 +50,10 @@ class ProductSupplierService
             throw new \Exception("Fornecedor não encontrado.");
         }
 
-        // [TODO] Verificar se existem produtos vinculados antes de deletar
-        // Se houver, você pode lançar uma exceção ou apenas desativar (soft delete)
+        if (!$supplier->getProducts()->isEmpty()) {
+            throw new \Exception("Não é possível excluir um fornecedor que possui produtos vinculados.");
+        }
+
         $this->entityManager->remove($supplier);
         $this->entityManager->flush();
     }

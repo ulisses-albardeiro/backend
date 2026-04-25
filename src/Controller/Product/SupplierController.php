@@ -43,4 +43,37 @@ final class SupplierController extends AbstractController
             return $this->json(['message' => 'ERROR_SAVING_SUPPLIER'], 500);
         }
     }
+
+    #[Route('/{id}', name: 'update', methods: ['PUT'])]
+    public function update(int $id, #[MapRequestPayload] SupplierInputDTO $dto): JsonResponse
+    {
+        try {
+            /** @var User $user */
+            $user = $this->getUser();
+            return $this->json($this->service->update($id, $dto, $user->getCompany()));
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to update supplier.', [
+                'supplier_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            return $this->json(['message' => $e->getMessage()], 400);
+        }
+    }
+
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    public function delete(int $id): JsonResponse
+    {
+        try {
+            /** @var User $user */
+            $user = $this->getUser();
+            $this->service->delete($id, $user->getCompany());
+            return $this->json(null, 204);
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to delete supplier.', [
+                'supplier_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            return $this->json(['message' => $e->getMessage()], 400);
+        }
+    }
 }
