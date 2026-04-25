@@ -21,12 +21,12 @@ class BrandMapper
         return $entity;
     }
 
-    public function toOutput(Brand $entity): BrandOutputDTO
+    public function toOutput(Brand $entity, string $urlImage): BrandOutputDTO
     {
         return new BrandOutputDTO(
             id: $entity->getId(),
             name: $entity->getName(),
-            logo: $entity->getLogo(),
+            logo: $urlImage,
             statusLabel: $entity->getStatus()->getLabel(),
             statusCode: $entity->getStatus()->value
         );

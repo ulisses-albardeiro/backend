@@ -97,7 +97,11 @@ class BrandService
 
     private function getSubDir(Company $company): string
     {
-        return 'company_' . md5($company->getCreatedAt()->format('U')) . '/brands';
+        if ($company->getCreatedAt()) {
+            return 'company_' . md5($company->getCreatedAt()->format('U')) . '/brands';
+        }
+
+        return '';
     }
 
     private function getLogoUrl($brand): string
