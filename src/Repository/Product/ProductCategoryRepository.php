@@ -2,6 +2,7 @@
 
 namespace App\Repository\Product;
 
+use App\Entity\Company;
 use App\Entity\Product\ProductCategory;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -16,28 +17,17 @@ class ProductCategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, ProductCategory::class);
     }
 
-    //    /**
-    //     * @return ProductCategory[] Returns an array of ProductCategory objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?ProductCategory
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function findCategoryTree(Company $company): array
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.subCategories', 's')
+            ->addSelect('s')
+            ->where('c.company = :company')
+            ->andWhere('c.parent IS NULL')
+            ->setParameter('company', $company)
+            ->orderBy('c.name', 'ASC')
+            ->addOrderBy('s.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

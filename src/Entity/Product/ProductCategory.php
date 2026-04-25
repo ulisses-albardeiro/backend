@@ -24,6 +24,12 @@ class ProductCategory
     #[ORM\ManyToOne(targetEntity: self::class)]
     private ?self $parent = null;
 
+    /**
+     * @var Collection<int, self>
+     */
+    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class, cascade: ['remove'])]
+    private Collection $subCategories;
+
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
@@ -45,6 +51,7 @@ class ProductCategory
     public function __construct()
     {
         $this->products = new ArrayCollection();
+        $this->subCategories = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -151,6 +158,33 @@ class ProductCategory
             }
         }
 
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, self>
+     */
+    public function getSubCategories(): Collection
+    {
+        return $this->subCategories;
+    }
+
+    public function addSubCategory(self $subCategory): static
+    {
+        if (!$this->subCategories->contains($subCategory)) {
+            $this->subCategories->add($subCategory);
+            $subCategory->setParent($this);
+        }
+        return $this;
+    }
+
+    public function removeSubCategory(self $subCategory): static
+    {
+        if ($this->subCategories->removeElement($subCategory)) {
+            if ($subCategory->getParent() === $this) {
+                $subCategory->setParent(null);
+            }
+        }
         return $this;
     }
 }
