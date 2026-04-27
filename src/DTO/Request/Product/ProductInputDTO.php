@@ -38,9 +38,11 @@ readonly class ProductInputDTO
         #[Assert\NotBlank]
         public ProductUnit $unit = ProductUnit::UNIDADE,
 
+        #[Assert\NotBlank]
         #[Assert\PositiveOrZero]
-        public float $initialStock = 0,
+        public float $stockQuantity = 0,
 
+        #[Assert\NotBlank]
         #[Assert\PositiveOrZero]
         public float $minStock = 0,
 
@@ -50,7 +52,6 @@ readonly class ProductInputDTO
         #[Assert\NotBlank]
         public ProductStatus $status = ProductStatus::ACTIVE,
         
-        /** @var string[]|null URLs ou Base64 das imagens */
         public ?array $images = null,
     ) {}
 }

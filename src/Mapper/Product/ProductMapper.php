@@ -23,6 +23,7 @@ class ProductMapper
     public function toEntity(ProductInputDTO $dto, ?Product $entity = null): Product
     {
         $entity = $entity ?? new Product();
+
         $entity->setName($dto->name);
         $entity->setSku($dto->sku);
         $entity->setBarcode($dto->barcode);
@@ -30,10 +31,16 @@ class ProductMapper
         $entity->setPurchasePrice($dto->purchasePrice);
         $entity->setSalePrice($dto->salePrice);
         $entity->setUnit($dto->unit);
+
+        $entity->setStockQuantity($dto->stockQuantity);
+
         $entity->setMinStock($dto->minStock);
         $entity->setNcm($dto->ncm);
         $entity->setStatus($dto->status);
-        $entity->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')));
+
+        if (!$entity->getId()) {
+            $entity->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')));
+        }
 
         $entity->setCategory($this->categoryRepository->find($dto->categoryId));
 
@@ -54,7 +61,7 @@ class ProductMapper
             id: $entity->getId(),
             name: $entity->getName(),
             category: $this->categoryMapper->toOutput($entity->getCategory()),
-            brand: $entity->getBrand() ? $this->brandMapper->toOutput($entity->getBrand()) : null,
+            brand: $entity->getBrand() ? $this->brandMapper->toOutput($entity->getBrand(), $entity->getBrand()->getLogo()) : null,
             supplier: $entity->getSupplier() ? $this->supplierMapper->toOutput($entity->getSupplier()) : null,
             sku: $entity->getSku(),
             barcode: $entity->getBarcode(),
@@ -63,12 +70,15 @@ class ProductMapper
             salePrice: $entity->getSalePrice(),
             unitLabel: $entity->getUnit()->getLabel(),
             unitCode: $entity->getUnit()->value,
-            stockQuantity: $entity->getStockQuantity(),
-            minStock: $entity->getMinStock(),
+            stockQuantity: $entity->getStockQuantity() ?? 0,
+            minStock: $entity->getMinStock() ?? 0,
             ncm: $entity->getNcm(),
             statusLabel: $entity->getStatus()->getLabel(),
-            images: [],
-            createdAt: $entity->getCreatedAt()
+            images: array_map(
+                fn($img) => $img->getUrl(),
+                $entity->getProductImages()->toArray()
+            ),
+            createdAt: $entity->getCreatedAt() ?? new \DateTimeImmutable(),
         );
     }
 }
