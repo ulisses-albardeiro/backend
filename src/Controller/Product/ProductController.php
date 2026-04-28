@@ -68,7 +68,7 @@ final class ProductController extends AbstractController
         }
     }
 
-    #[Route('/{id}', name: 'update', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'update', methods: ['PUT'], requirements: ['id' => '\d+'])]
     public function update(
         int $id,
         #[MapRequestPayload] ProductInputDTO $dto,
@@ -101,6 +101,7 @@ final class ProductController extends AbstractController
         try {
             /** @var User $user */
             $user = $this->getUser();
+
             $this->service->delete($id, $user->getCompany());
 
             return $this->json(null, 204);

@@ -13,6 +13,7 @@ enum ProductUnit: string
     case PACOTE = 'PCT';
     case CAIXA = 'CX';
     case PAR = 'PAR';
+    case DUZIA = 'DZ';
 
     /**
      * Retorna o nome por extenso para exibir em selects ou labels
@@ -29,6 +30,7 @@ enum ProductUnit: string
             self::PACOTE => 'Pacote',
             self::CAIXA => 'Caixa',
             self::PAR => 'Par',
+            self::DUZIA => 'Dúzia'
         };
     }
 }

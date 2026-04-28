@@ -82,7 +82,7 @@ class Product
     /**
      * @var Collection<int, InventoryMovement>
      */
-    #[ORM\OneToMany(targetEntity: InventoryMovement::class, mappedBy: 'product')]
+    #[ORM\OneToMany(targetEntity: InventoryMovement::class, mappedBy: 'product', orphanRemoval: true, cascade: ['remove'])]
     private Collection $inventoryMovements;
 
     #[ORM\PrePersist]

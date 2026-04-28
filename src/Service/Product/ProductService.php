@@ -8,6 +8,7 @@ use App\Entity\Company;
 use App\Entity\Product\Product;
 use App\Entity\Product\ProductImage;
 use App\Enum\Product\InventoryMovementType;
+use App\Enum\Product\ProductStatus;
 use App\Mapper\Product\ProductMapper;
 use App\Repository\Product\ProductRepository;
 use App\Service\FileService;
@@ -34,7 +35,7 @@ class ProductService
         $product->setCompany($company);
 
         $this->entityManager->persist($product);
-        
+
         // Se houver imagens, processamos antes do flush final
         if (!empty($imageFiles)) {
             $this->handleImagesUpload($product, $company, $imageFiles);
@@ -46,7 +47,7 @@ class ProductService
             $this->inventoryService->registerMovement(
                 $product,
                 $dto->stockQuantity,
-                InventoryMovementType::INPUT,
+                InventoryMovementType::INITIAL_REGISTRATION,
                 'Estoque inicial no cadastro do produto'
             );
         }
@@ -78,9 +79,9 @@ class ProductService
 
     public function listAll(Company $company): array
     {
-        $products = $this->productRepository->findBy(['company' => $company]);
+        $products = $this->productRepository->findBy(['company' => $company, 'status' => ProductStatus::ACTIVE]);
         return array_map(
-            fn($p) => $this->productMapper->toOutput($p, $this->formatProductImagesUrls($p)), 
+            fn($p) => $this->productMapper->toOutput($p, $this->formatProductImagesUrls($p)),
             $products
         );
     }
@@ -104,17 +105,28 @@ class ProductService
             throw new NotFoundHttpException('PRODUCT_NOT_FOUND');
         }
 
-        // Remover arquivos físicos antes de deletar a entidade
-        $subDir = $this->getSubDir($company);
-        foreach ($product->getProductImages() as $image) {
-            $this->fileService->remove($subDir, $image->getPath());
+        $movements = $product->getInventoryMovements();
+
+        $canDelete = $movements->count() <= 1;
+
+        if ($canDelete && $movements->count() === 1) {
+            $firstMovement = $movements->first();
+            if ($firstMovement->getType() !== InventoryMovementType::INITIAL_REGISTRATION) {
+                $canDelete = false;
+            }
+        }
+
+        if (!$canDelete) {
+            $product->setStatus(ProductStatus::INACTIVE);
+            $this->entityManager->flush();
+            return;
         }
 
         try {
             $this->entityManager->remove($product);
             $this->entityManager->flush();
         } catch (\Exception $e) {
-            throw new \Exception('CANNOT_DELETE_PRODUCT_IN_USE');
+            throw new \Exception('ERROR_DELETING_PRODUCT');
         }
     }
 
@@ -123,7 +135,7 @@ class ProductService
     private function handleImagesUpload(Product $product, Company $company, array $imageFiles): void
     {
         $subDir = $this->getSubDir($company);
-        
+
         foreach ($imageFiles as $index => $file) {
             if (!$file instanceof UploadedFile) continue;
 
@@ -144,7 +156,7 @@ class ProductService
     private function formatProductImagesUrls(Product $product): array
     {
         $subDir = $this->getSubDir($product->getCompany());
-        
+
         return $product->getProductImages()->map(fn(ProductImage $img) => [
             'id' => $img->getId(),
             'url' => $this->fileService->getPublicUrl($subDir, $img->getPath()),

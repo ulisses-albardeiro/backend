@@ -5,6 +5,7 @@ namespace App\Service\Product;
 use App\DTO\Request\Product\BrandInputDTO;
 use App\DTO\Response\Product\BrandOutputDTO;
 use App\Entity\Company;
+use App\Entity\Product\Brand;
 use App\Mapper\Product\BrandMapper;
 use App\Repository\Product\BrandRepository;
 use App\Repository\Product\ProductRepository;
@@ -104,7 +105,7 @@ class BrandService
         return '';
     }
 
-    private function getLogoUrl($brand): string
+    private function getLogoUrl(Brand $brand): string
     {
         return $this->fileService->getPublicUrl($this->getSubDir($brand->getCompany()), $brand->getLogo());
     }
