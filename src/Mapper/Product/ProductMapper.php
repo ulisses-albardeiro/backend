@@ -38,10 +38,6 @@ class ProductMapper
         $entity->setNcm($dto->ncm);
         $entity->setStatus($dto->status);
 
-        if (!$entity->getId()) {
-            $entity->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')));
-        }
-
         $entity->setCategory($this->categoryRepository->find($dto->categoryId));
 
         if ($dto->brandId) {
@@ -55,7 +51,7 @@ class ProductMapper
         return $entity;
     }
 
-    public function toOutput(Product $entity): ProductOutputDTO
+    public function toOutput(Product $entity, ?array $productImages): ProductOutputDTO
     {
         return new ProductOutputDTO(
             id: $entity->getId(),
@@ -74,11 +70,8 @@ class ProductMapper
             minStock: $entity->getMinStock() ?? 0,
             ncm: $entity->getNcm(),
             statusLabel: $entity->getStatus()->getLabel(),
-            images: array_map(
-                fn($img) => $img->getUrl(),
-                $entity->getProductImages()->toArray()
-            ),
-            createdAt: $entity->getCreatedAt() ?? new \DateTimeImmutable(),
+            images: $productImages ?? [],
+            createdAt: $entity->getCreatedAt(),
         );
     }
 }

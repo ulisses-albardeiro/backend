@@ -7,6 +7,7 @@ use App\Service\Product\ProductService;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -43,38 +44,51 @@ final class ProductController extends AbstractController
     }
 
     #[Route('', name: 'store', methods: ['POST'])]
-    public function store(#[MapRequestPayload] ProductInputDTO $dto): JsonResponse
-    {
+    public function store(
+        #[MapRequestPayload] ProductInputDTO $dto,
+        Request $request
+    ): JsonResponse {
         try {
             /** @var User $user */
             $user = $this->getUser();
-            $product = $this->service->create($dto, $user->getCompany());
+
+            $imageFiles = $request->files->get('images') ?? [];
+
+            $product = $this->service->create($dto, $user->getCompany(), $imageFiles);
+
             return $this->json($product, 201);
         } catch (BadRequestHttpException $e) {
             return $this->json(['message' => $e->getMessage()], 400);
         } catch (\Exception $e) {
             $this->logger->error('Failed to save product.', [
-                'user_id' => $user->getId(),
+                'user_id' => $user->getId() ?? 'unknown',
                 'error' => $e->getMessage()
             ]);
             return $this->json(['message' => 'ERROR_SAVING_PRODUCT'], 500);
         }
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT'], requirements: ['id' => '\d+'])]
-    public function update(int $id, #[MapRequestPayload] ProductInputDTO $dto): JsonResponse
-    {
+    #[Route('/{id}', name: 'update', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function update(
+        int $id,
+        #[MapRequestPayload] ProductInputDTO $dto,
+        Request $request
+    ): JsonResponse {
         try {
             /** @var User $user */
             $user = $this->getUser();
-            $product = $this->service->update($id, $dto, $user->getCompany());
-            return $this->json($product, 201);
+
+            $imageFiles = $request->files->get('images') ?? [];
+
+            $product = $this->service->update($id, $dto, $user->getCompany(), $imageFiles);
+
+            return $this->json($product, 200);
         } catch (NotFoundHttpException $e) {
             return $this->json(['message' => $e->getMessage()], 404);
         } catch (\Exception $e) {
             $this->logger->error('Update product error', [
                 'product_id' => $id,
-                'user_id' => $user->getId(),
+                'user_id' => $user->getId() ?? 'unknown',
                 'error' => $e->getMessage()
             ]);
             return $this->json(['message' => 'ERROR_UPDATING_PRODUCT'], 500);
@@ -89,7 +103,7 @@ final class ProductController extends AbstractController
             $user = $this->getUser();
             $this->service->delete($id, $user->getCompany());
 
-            return $this->json(null, 204); // 204 No Content é o padrão para deletes bem-sucedidos
+            return $this->json(null, 204);
         } catch (NotFoundHttpException $e) {
             return $this->json(['message' => $e->getMessage()], 404);
         } catch (\Exception $e) {

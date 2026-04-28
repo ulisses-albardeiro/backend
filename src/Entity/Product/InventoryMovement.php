@@ -8,6 +8,7 @@ use App\Repository\Product\InventoryMovementRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: InventoryMovementRepository::class)]
 class InventoryMovement
 {
@@ -37,6 +38,14 @@ class InventoryMovement
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): void
+    {
+        if ($this->createdAt === null) {
+            $this->createdAt = new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
+        }
+    }
 
     public function getId(): ?int
     {

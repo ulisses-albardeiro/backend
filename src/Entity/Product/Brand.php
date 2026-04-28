@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: BrandRepository::class)]
 class Brand
 {
@@ -41,6 +42,22 @@ class Brand
      */
     #[ORM\OneToMany(targetEntity: Product::class, mappedBy: 'brand')]
     private Collection $products;
+
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): void
+    {
+        if ($this->createdAt === null) {
+            $this->createdAt = new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
+        }
+    }
+
+    #[ORM\PreRemove]
+    public function setUpdatedAtValue(): void
+    {
+        if ($this->updatedAt === null) {
+            $this->updatedAt = new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
+        }
+    }
 
     public function __construct()
     {
