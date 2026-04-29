@@ -9,7 +9,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 #[Route('/movements', name: 'api_movements_', format: 'json')]
-final class MovementsController extends AbstractController
+final class InventoryMovementController extends AbstractController
 {
     #[Route('', name: 'index', methods:['GET'])]
     public function index(): JsonResponse
