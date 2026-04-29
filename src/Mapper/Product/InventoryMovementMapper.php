@@ -42,6 +42,7 @@ class InventoryMovementMapper
             salePrice: $entity->getSalePrice(),
             description: $entity->getDescription(),
             createdAt: $entity->getCreatedAt(),
+            updatedAt: $entity->getUpdatedAt(),
         );
     }
 }

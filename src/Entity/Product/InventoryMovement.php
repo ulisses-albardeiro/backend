@@ -42,12 +42,19 @@ class InventoryMovement
     #[ORM\Column(nullable: true)]
     private ?int $salePrice = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
-        if ($this->createdAt === null) {
-            $this->createdAt = new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
-        }
+        $this->createdAt = new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
+    }
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
     }
 
     public function getId(): ?int
@@ -147,6 +154,18 @@ class InventoryMovement
     public function setSalePrice(?int $salePrice): static
     {
         $this->salePrice = $salePrice;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }
