@@ -34,6 +34,7 @@ class InventoryMovementService
         $movement->setQuantity($quantity);
         $movement->setType($type);
         $movement->setUnitPrice($product->getPurchasePrice());
+        $movement->setSalePrice($product->getSalePrice());
         $movement->setDescription($description);
 
         $currentStock = $product->getStockQuantity();

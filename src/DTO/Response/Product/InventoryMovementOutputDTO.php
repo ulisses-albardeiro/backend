@@ -15,6 +15,6 @@ readonly class InventoryMovementOutputDTO
         public int $salePrice,
         public ?string $description,
         public \DateTimeInterface $createdAt,
-        public \DateTimeInterface $updatedAt,
+        public ?\DateTimeInterface $updatedAt,
     ) {}
 }

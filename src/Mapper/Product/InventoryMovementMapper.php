@@ -39,7 +39,7 @@ class InventoryMovementMapper
             typeValue: $entity->getType()->value,
             quantity: $entity->getQuantity(),
             unitPrice: $entity->getUnitPrice(),
-            salePrice: $entity->getSalePrice(),
+            salePrice: $entity->getSalePrice() ?? 0,
             description: $entity->getDescription(),
             createdAt: $entity->getCreatedAt(),
             updatedAt: $entity->getUpdatedAt(),
