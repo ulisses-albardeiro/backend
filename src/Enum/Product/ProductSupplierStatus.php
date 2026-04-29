@@ -5,7 +5,7 @@ namespace App\Enum\Product;
 enum ProductSupplierStatus: string
 {
     case ACTIVE = 'active';
-    case INACTIVE = 'Inactive';
+    case INACTIVE = 'inactive';
 
     /**
      * Retorna o texto formatado para labels ou badges no sistema
@@ -13,8 +13,8 @@ enum ProductSupplierStatus: string
     public function getLabel(): string
     {
         return match($this) {
-            self::ACTIVE => 'Ativa',
-            self::INACTIVE => 'Inativa',
+            self::ACTIVE => 'Ativo',
+            self::INACTIVE => 'Inativo',
         };
     }
 

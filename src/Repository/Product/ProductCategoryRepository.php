@@ -30,4 +30,20 @@ class ProductCategoryRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findCategoryTreeByStatus(Company $company, string $status): array
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.subCategories', 's')
+            ->addSelect('s')
+            ->where('c.company = :company')
+            ->andWhere('c.status = :status')
+            ->andWhere('c.parent IS NULL')
+            ->setParameter('company', $company)
+            ->setParameter('status', $status)
+            ->orderBy('c.name', 'ASC')
+            ->addOrderBy('s.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

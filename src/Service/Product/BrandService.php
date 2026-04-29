@@ -6,9 +6,9 @@ use App\DTO\Request\Product\BrandInputDTO;
 use App\DTO\Response\Product\BrandOutputDTO;
 use App\Entity\Company;
 use App\Entity\Product\Brand;
+use App\Enum\Product\ProductBrandStatus;
 use App\Mapper\Product\BrandMapper;
 use App\Repository\Product\BrandRepository;
-use App\Repository\Product\ProductRepository;
 use App\Service\FileService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -19,7 +19,6 @@ class BrandService
         private EntityManagerInterface $entityManager,
         private BrandMapper $mapper,
         private BrandRepository $repository,
-        private ProductRepository $productRepository,
         private FileService $fileService
     ) {}
 
@@ -53,7 +52,7 @@ class BrandService
         $brand = $this->mapper->toEntity($dto, $brand);
         $this->entityManager->flush();
 
-        if ($logoFile) {
+        if ($logoFile && $logoFile->isValid()) {
             $subDir = $this->getSubDir($company);
 
             if ($oldLogo) {
@@ -74,11 +73,6 @@ class BrandService
 
         if (!$brand) throw new \Exception("Marca não encontrada.");
 
-        $hasProducts = $this->productRepository->findOneBy(['brand' => $brand]);
-        if ($hasProducts) {
-            throw new \Exception("Não é possível excluir marca com produtos vinculados.");
-        }
-
         if ($brand->getLogo()) {
             $this->fileService->remove($this->getSubDir($company), $brand->getLogo());
         }
@@ -90,6 +84,15 @@ class BrandService
     public function listAll(Company $company): array
     {
         $brands = $this->repository->findBy(['company' => $company], ['name' => 'ASC']);
+
+        return array_map(function ($brand) {
+            return $this->mapper->toOutput($brand, $this->getLogoUrl($brand));
+        }, $brands);
+    }
+
+    public function listAllActive(Company $company): array
+    {
+        $brands = $this->repository->findBy(['company' => $company, 'status' => ProductBrandStatus::ACTIVE], ['name' => 'ASC']);
 
         return array_map(function ($brand) {
             return $this->mapper->toOutput($brand, $this->getLogoUrl($brand));

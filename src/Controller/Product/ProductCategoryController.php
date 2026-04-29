@@ -4,6 +4,7 @@ namespace App\Controller\Product;
 
 use App\DTO\Request\Product\CategoryInputDTO;
 use App\Service\Product\ProductCategoryService;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -28,6 +29,14 @@ final class ProductCategoryController extends AbstractController
         return $this->json($this->service->listAllByCompany($user->getCompany()));
     }
 
+    #[Route('/active', name: 'active', methods: ['GET'])]
+    public function indexActive(): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        return $this->json($this->service->listAllByStatus($user->getCompany(), 'active'));
+    }
+
     #[Route('', name: 'store', methods: ['POST'])]
     public function store(#[MapRequestPayload] CategoryInputDTO $dto): JsonResponse
     {
@@ -36,11 +45,11 @@ final class ProductCategoryController extends AbstractController
             $user = $this->getUser();
             return $this->json($this->service->create($dto, $user->getCompany()), 201);
         } catch (\Exception $e) {
-            $this->logger->error('Failed to save product category.', [
+            $this->logger->error('Falha ao salvar categoria de produto.', [
                 'user_id' => $user->getId(),
                 'error' => $e->getMessage()
             ]);
-            return $this->json(['message' => 'ERROR_SAVING_PRODUCT_CATEGORY'], 500);
+            return $this->json(['message' => 'Houve um erro inesperado.'], 500);
         }
     }
 
@@ -52,11 +61,11 @@ final class ProductCategoryController extends AbstractController
             $user = $this->getUser();
             return $this->json($this->service->update($id, $dto, $user->getCompany()));
         } catch (\Exception $e) {
-            $this->logger->error('Failed to update product category.', [
+            $this->logger->error('Falha ao atualizar categoria de produto.', [
                 'id' => $id,
                 'error' => $e->getMessage()
             ]);
-            return $this->json(['message' => 'ERROR_UPDATING_PRODUCT_CATEGORY'], 500);
+            return $this->json(['message' => 'Houve um erro inesperado.'], 500);
         }
     }
 
@@ -68,12 +77,18 @@ final class ProductCategoryController extends AbstractController
             $user = $this->getUser();
             $this->service->delete($id, $user->getCompany());
             return $this->json(null, 204);
+        } catch (ForeignKeyConstraintViolationException $e) {
+            return $this->json([
+                'message' => "Não é possível excluir Essa categoria, pois existem produtos associados a ela."
+            ], 409);
         } catch (\Exception $e) {
-            $this->logger->error('Failed to delete product category.', [
+            $this->logger->error('Erro ao deletar Categoria de Produto.', [
                 'id' => $id,
                 'error' => $e->getMessage()
             ]);
-            return $this->json(['message' => $e->getMessage() ?: 'ERROR_DELETING_PRODUCT_CATEGORY'], 500);
+            return $this->json([
+                'message' => 'Houve um erro Inesperado.'
+            ], 500);
         }
     }
 }

@@ -14,9 +14,10 @@ class BrandMapper
     {
         $entity = $entity ?? new Brand();
         $entity->setName($dto->name);
-        $entity->setLogo($dto->logo);
+        if ($dto->logo) {
+            $entity->setLogo($dto->logo);
+        }
         $entity->setStatus($dto->status);
-        $entity->setCreatedAt(new DateTimeImmutable('now', new DateTimeZone('America/Sao_Paulo')));
 
         return $entity;
     }

@@ -28,6 +28,14 @@ final class SupplierController extends AbstractController
         return $this->json($this->service->listAll($user->getCompany()));
     }
 
+    #[Route('/active', name: 'active', methods: ['GET'])]
+    public function indexActive(): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        return $this->json($this->service->listByStatus($user->getCompany(), 'active'));
+    }
+
     #[Route('', name: 'store', methods: ['POST'])]
     public function store(#[MapRequestPayload] SupplierInputDTO $dto): JsonResponse
     {

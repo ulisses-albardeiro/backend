@@ -70,4 +70,17 @@ class ProductSupplierService
             $suppliers
         );
     }
+
+    /**
+     * @return SupplierOutputDTO[]
+     */
+    public function listByStatus(Company $company, string $status): array
+    {
+        $suppliers = $this->repository->findBy(['company' => $company, 'status' => $status], ['name' => 'ASC']);
+        
+        return array_map(
+            fn($supplier) => $this->mapper->toOutput($supplier),
+            $suppliers
+        );
+    }
 }

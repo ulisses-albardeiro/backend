@@ -4,6 +4,7 @@ namespace App\Controller\Product;
 
 use App\DTO\Request\Product\BrandInputDTO;
 use App\Service\Product\BrandService;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -29,6 +30,14 @@ final class BrandController extends AbstractController
         return $this->json($this->service->listAll($user->getCompany()));
     }
 
+    #[Route('/active', name: 'active', methods: ['GET'])]
+    public function indexByActive(): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        return $this->json($this->service->listAllActive($user->getCompany()));
+    }
+
     #[Route('', name: 'store', methods: ['POST'])]
     public function store(
         #[MapRequestPayload] BrandInputDTO $dto,
@@ -45,7 +54,7 @@ final class BrandController extends AbstractController
         }
     }
 
-    #[Route('/{id}', name: 'update', methods: ['POST'])]
+    #[Route('/{id}', name: 'update', methods: ['PUT'])]
     public function update(
         int $id,
         #[MapRequestPayload] BrandInputDTO $dto,
@@ -70,6 +79,10 @@ final class BrandController extends AbstractController
             $user = $this->getUser();
             $this->service->delete($id, $user->getCompany());
             return $this->json(null, 204);
+        } catch (ForeignKeyConstraintViolationException $e) {
+            return $this->json([
+                'message' => "Não é possível excluir Essa categoria, pois existem produtos associados a ela."
+            ], 409);
         } catch (\Exception $e) {
             $this->logger->error('Failed to delete brand.', [
                 'brand_id' => $id,
