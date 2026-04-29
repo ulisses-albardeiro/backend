@@ -12,9 +12,6 @@ readonly class InventoryMovementInputDTO
         public int $productId,
 
         #[Assert\NotBlank]
-        public int $companyId,
-
-        #[Assert\NotBlank]
         public InventoryMovementType $type,
 
         #[Assert\NotBlank]

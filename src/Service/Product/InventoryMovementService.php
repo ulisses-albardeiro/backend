@@ -52,11 +52,10 @@ class InventoryMovementService
     /**
      * Registra uma movimentação e atualiza o saldo do produto.
      */
-    public function registerMovement(InventoryMovementInputDTO $dto): InventoryMovementOutputDTO
+    public function registerMovement(InventoryMovementInputDTO $dto, Company $company): InventoryMovementOutputDTO
     {
         // 1. Buscar as entidades relacionadas (necessário para o Mapper)
         $product = $this->productRepository->find($dto->productId);
-        $company = $this->entityManager->getReference(Company::class, $dto->companyId);
 
         if (!$product) {
             throw new \Exception("Produto não encontrado.");
