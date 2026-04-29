@@ -22,7 +22,7 @@ class ProductService
         private EntityManagerInterface $entityManager,
         private ProductRepository $productRepository,
         private ProductMapper $productMapper,
-        private InventoryService $inventoryService,
+        private InventoryMovementService $inventoryService,
         private FileService $fileService
     ) {}
 
@@ -44,7 +44,7 @@ class ProductService
         $this->entityManager->flush();
 
         if ($dto->stockQuantity > 0) {
-            $this->inventoryService->registerMovement(
+            $this->inventoryService->registerFirstMovement(
                 $product,
                 $dto->stockQuantity,
                 InventoryMovementType::INITIAL_REGISTRATION,

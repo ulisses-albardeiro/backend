@@ -5,8 +5,6 @@ namespace App\Mapper\Product;
 use App\DTO\Request\Product\BrandInputDTO;
 use App\DTO\Response\Product\BrandOutputDTO;
 use App\Entity\Product\Brand;
-use DateTimeImmutable;
-use DateTimeZone;
 
 class BrandMapper
 {

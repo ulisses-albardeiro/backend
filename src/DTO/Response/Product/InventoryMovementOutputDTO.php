@@ -6,9 +6,11 @@ readonly class InventoryMovementOutputDTO
 {
     public function __construct(
         public int $id,
-        public float $quantity,
+        public int $productId,
+        public string $productName,
         public string $typeLabel,
-        public string $typeCode,
+        public string $typeValue,
+        public float $quantity,
         public int $unitPrice,
         public ?string $description,
         public \DateTimeInterface $createdAt,
