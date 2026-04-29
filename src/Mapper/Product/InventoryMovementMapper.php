@@ -23,6 +23,7 @@ class InventoryMovementMapper
         $entity->setType($dto->type);
         $entity->setQuantity($dto->quantity);
         $entity->setUnitPrice($dto->unitPrice);
+        $entity->setSalePrice($dto->salePrice);
         $entity->setDescription($dto->description);
 
         return $entity;
@@ -38,6 +39,7 @@ class InventoryMovementMapper
             typeValue: $entity->getType()->value,
             quantity: $entity->getQuantity(),
             unitPrice: $entity->getUnitPrice(),
+            salePrice: $entity->getSalePrice(),
             description: $entity->getDescription(),
             createdAt: $entity->getCreatedAt(),
         );

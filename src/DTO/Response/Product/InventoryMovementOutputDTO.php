@@ -12,6 +12,7 @@ readonly class InventoryMovementOutputDTO
         public string $typeValue,
         public float $quantity,
         public int $unitPrice,
+        public int $salePrice,
         public ?string $description,
         public \DateTimeInterface $createdAt,
     ) {}

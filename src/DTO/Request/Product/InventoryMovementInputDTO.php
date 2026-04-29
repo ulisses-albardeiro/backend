@@ -22,6 +22,10 @@ readonly class InventoryMovementInputDTO
         #[Assert\PositiveOrZero]
         public int $unitPrice,
 
+        #[Assert\NotBlank]
+        #[Assert\PositiveOrZero]
+        public int $salePrice,
+
         public ?string $description = null,
     ) {}
 }
