@@ -39,6 +39,9 @@ class InventoryMovement
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $salePrice = null;
+
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
@@ -132,6 +135,18 @@ class InventoryMovement
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getSalePrice(): ?int
+    {
+        return $this->salePrice;
+    }
+
+    public function setSalePrice(?int $salePrice): static
+    {
+        $this->salePrice = $salePrice;
 
         return $this;
     }
