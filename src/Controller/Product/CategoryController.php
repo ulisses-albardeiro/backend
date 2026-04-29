@@ -14,7 +14,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 #[Route('/api/product-category', name: 'api_product_category_', format: 'json')]
-final class ProductCategoryController extends AbstractController
+final class CategoryController extends AbstractController
 {
     public function __construct(
         private LoggerInterface $logger,
