@@ -48,9 +48,16 @@ class LaborCategory
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    /**
+     * @var Collection<int, Labor>
+     */
+    #[ORM\OneToMany(targetEntity: Labor::class, mappedBy: 'category', orphanRemoval: true)]
+    private Collection $labors;
+
     public function __construct()
     {
         $this->subCategories = new ArrayCollection();
+        $this->labors = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -180,6 +187,36 @@ class LaborCategory
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Labor>
+     */
+    public function getLabors(): Collection
+    {
+        return $this->labors;
+    }
+
+    public function addLabor(Labor $labor): static
+    {
+        if (!$this->labors->contains($labor)) {
+            $this->labors->add($labor);
+            $labor->setCategory($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLabor(Labor $labor): static
+    {
+        if ($this->labors->removeElement($labor)) {
+            // set the owning side to null (unless already changed)
+            if ($labor->getCategory() === $this) {
+                $labor->setCategory(null);
+            }
+        }
 
         return $this;
     }

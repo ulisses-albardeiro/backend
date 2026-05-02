@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Labor\Labor;
 use App\Entity\Labor\LaborCategory;
 use App\Entity\Product\Brand;
 use App\Entity\Product\InventoryMovement;
@@ -149,6 +150,12 @@ class Company
     #[ORM\OneToMany(targetEntity: LaborCategory::class, mappedBy: 'company', orphanRemoval: true)]
     private Collection $laborCategories;
 
+    /**
+     * @var Collection<int, Labor>
+     */
+    #[ORM\OneToMany(targetEntity: Labor::class, mappedBy: 'company', orphanRemoval: true)]
+    private Collection $labors;
+
     public function __construct()
     {
         $this->customers = new ArrayCollection();
@@ -163,6 +170,7 @@ class Company
         $this->products = new ArrayCollection();
         $this->inventoryMovements = new ArrayCollection();
         $this->laborCategories = new ArrayCollection();
+        $this->labors = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -761,6 +769,36 @@ class Company
             // set the owning side to null (unless already changed)
             if ($laborCategory->getCompany() === $this) {
                 $laborCategory->setCompany(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Labor>
+     */
+    public function getLabors(): Collection
+    {
+        return $this->labors;
+    }
+
+    public function addLabor(Labor $labor): static
+    {
+        if (!$this->labors->contains($labor)) {
+            $this->labors->add($labor);
+            $labor->setCompany($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLabor(Labor $labor): static
+    {
+        if ($this->labors->removeElement($labor)) {
+            // set the owning side to null (unless already changed)
+            if ($labor->getCompany() === $this) {
+                $labor->setCompany(null);
             }
         }
 
