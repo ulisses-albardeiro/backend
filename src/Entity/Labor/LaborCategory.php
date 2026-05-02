@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: LaborCategoryRepository::class)]
 class LaborCategory
 {
@@ -53,6 +54,22 @@ class LaborCategory
      */
     #[ORM\OneToMany(targetEntity: Labor::class, mappedBy: 'category', orphanRemoval: true)]
     private Collection $labors;
+
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): void
+    {
+        if ($this->createdAt === null) {
+            $this->createdAt = new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
+        }
+    }
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        if ($this->updatedAt === null) {
+            $this->updatedAt = new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
+        }
+    }
 
     public function __construct()
     {

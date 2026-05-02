@@ -9,6 +9,7 @@ use App\Repository\Labor\LaborRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: LaborRepository::class)]
 class Labor
 {
@@ -45,6 +46,22 @@ class Labor
 
     #[ORM\Column(nullable: true, enumType: LaborUnit::class)]
     private ?LaborUnit $unit = null;
+
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): void
+    {
+        if ($this->createdAt === null) {
+            $this->createdAt = new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
+        }
+    }
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        if ($this->updatedAt === null) {
+            $this->updatedAt = new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
+        }
+    }
 
     public function getId(): ?int
     {
