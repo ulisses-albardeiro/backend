@@ -4,6 +4,7 @@ namespace App\Entity\Labor;
 
 use App\Entity\Company;
 use App\Enum\Labor\LaborStatus;
+use App\Enum\Labor\LaborUnit;
 use App\Repository\Labor\LaborRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -41,6 +42,9 @@ class Labor
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\Column(nullable: true, enumType: LaborUnit::class)]
+    private ?LaborUnit $unit = null;
 
     public function getId(): ?int
     {
@@ -139,6 +143,18 @@ class Labor
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getUnit(): ?LaborUnit
+    {
+        return $this->unit;
+    }
+
+    public function setUnit(?LaborUnit $unit): static
+    {
+        $this->unit = $unit;
 
         return $this;
     }
