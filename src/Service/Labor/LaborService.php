@@ -52,6 +52,18 @@ class LaborService
     public function listAll(Company $company): array
     {
         $labors = $this->laborRepository->findBy([
+            'company' => $company,
+        ]);
+        
+        return array_map(
+            fn($l) => $this->laborMapper->toOutput($l),
+            $labors
+        );
+    }
+
+    public function listActive(Company $company): array
+    {
+        $labors = $this->laborRepository->findBy([
             'company' => $company, 
             'status' => LaborStatus::ACTIVE
         ]);
