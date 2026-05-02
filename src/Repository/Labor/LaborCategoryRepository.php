@@ -2,6 +2,7 @@
 
 namespace App\Repository\Labor;
 
+use App\Entity\Company;
 use App\Entity\Labor\LaborCategory;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -16,28 +17,33 @@ class LaborCategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, LaborCategory::class);
     }
 
-    //    /**
-    //     * @return LaborCategory[] Returns an array of LaborCategory objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('l')
-    //            ->andWhere('l.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('l.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+   public function findCategoryTree(Company $company): array
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.subCategories', 's')
+            ->addSelect('s')
+            ->where('c.company = :company')
+            ->andWhere('c.parent IS NULL')
+            ->setParameter('company', $company)
+            ->orderBy('c.name', 'ASC')
+            ->addOrderBy('s.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?LaborCategory
-    //    {
-    //        return $this->createQueryBuilder('l')
-    //            ->andWhere('l.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function findCategoryTreeByStatus(Company $company, string $status): array
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.subCategories', 's')
+            ->addSelect('s')
+            ->where('c.company = :company')
+            ->andWhere('c.status = :status')
+            ->andWhere('c.parent IS NULL')
+            ->setParameter('company', $company)
+            ->setParameter('status', $status)
+            ->orderBy('c.name', 'ASC')
+            ->addOrderBy('s.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
