@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Labor\LaborCategory;
 use App\Entity\Product\Brand;
 use App\Entity\Product\InventoryMovement;
 use App\Entity\Product\Product;
@@ -142,6 +143,12 @@ class Company
     #[ORM\OneToMany(targetEntity: InventoryMovement::class, mappedBy: 'company', orphanRemoval: true)]
     private Collection $inventoryMovements;
 
+    /**
+     * @var Collection<int, LaborCategory>
+     */
+    #[ORM\OneToMany(targetEntity: LaborCategory::class, mappedBy: 'company', orphanRemoval: true)]
+    private Collection $laborCategories;
+
     public function __construct()
     {
         $this->customers = new ArrayCollection();
@@ -155,6 +162,7 @@ class Company
         $this->suppliers = new ArrayCollection();
         $this->products = new ArrayCollection();
         $this->inventoryMovements = new ArrayCollection();
+        $this->laborCategories = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -723,6 +731,36 @@ class Company
             // set the owning side to null (unless already changed)
             if ($inventoryMovement->getCompany() === $this) {
                 $inventoryMovement->setCompany(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, LaborCategory>
+     */
+    public function getLaborCategories(): Collection
+    {
+        return $this->laborCategories;
+    }
+
+    public function addLaborCategory(LaborCategory $laborCategory): static
+    {
+        if (!$this->laborCategories->contains($laborCategory)) {
+            $this->laborCategories->add($laborCategory);
+            $laborCategory->setCompany($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLaborCategory(LaborCategory $laborCategory): static
+    {
+        if ($this->laborCategories->removeElement($laborCategory)) {
+            // set the owning side to null (unless already changed)
+            if ($laborCategory->getCompany() === $this) {
+                $laborCategory->setCompany(null);
             }
         }
 
