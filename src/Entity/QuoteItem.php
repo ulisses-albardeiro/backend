@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use App\Entity\Labor\Labor;
+use App\Entity\Product\Product;
 use App\Repository\QuoteItemRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -30,6 +32,12 @@ class QuoteItem
 
     #[ORM\Column]
     private ?int $totalPrice = null;
+
+    #[ORM\ManyToOne(inversedBy: 'quoteItems')]
+    private ?Product $product = null;
+
+    #[ORM\ManyToOne(inversedBy: 'quoteItems')]
+    private ?Labor $labor = null;
 
     public function getTotalPrice(): ?int
     {
@@ -92,6 +100,30 @@ class QuoteItem
     public function setUnitPrice(int $unitPrice): static
     {
         $this->unitPrice = $unitPrice;
+
+        return $this;
+    }
+
+    public function getProduct(): ?Product
+    {
+        return $this->product;
+    }
+
+    public function setProduct(?Product $product): static
+    {
+        $this->product = $product;
+
+        return $this;
+    }
+
+    public function getLabor(): ?Labor
+    {
+        return $this->labor;
+    }
+
+    public function setLabor(?Labor $labor): static
+    {
+        $this->labor = $labor;
 
         return $this;
     }

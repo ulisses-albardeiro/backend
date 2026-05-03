@@ -3,6 +3,7 @@
 namespace App\Entity\Product;
 
 use App\Entity\Company;
+use App\Entity\QuoteItem;
 use App\Enum\Product\ProductStatus;
 use App\Enum\Product\ProductUnit;
 use App\Repository\Product\ProductRepository;
@@ -85,6 +86,12 @@ class Product
     #[ORM\OneToMany(targetEntity: InventoryMovement::class, mappedBy: 'product', orphanRemoval: true, cascade: ['remove'])]
     private Collection $inventoryMovements;
 
+    /**
+     * @var Collection<int, QuoteItem>
+     */
+    #[ORM\OneToMany(targetEntity: QuoteItem::class, mappedBy: 'product')]
+    private Collection $quoteItems;
+
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
@@ -97,6 +104,7 @@ class Product
     {
         $this->productImages = new ArrayCollection();
         $this->inventoryMovements = new ArrayCollection();
+        $this->quoteItems = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -362,6 +370,36 @@ class Product
             // set the owning side to null (unless already changed)
             if ($inventoryMovement->getProduct() === $this) {
                 $inventoryMovement->setProduct(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, QuoteItem>
+     */
+    public function getQuoteItems(): Collection
+    {
+        return $this->quoteItems;
+    }
+
+    public function addQuoteItem(QuoteItem $quoteItem): static
+    {
+        if (!$this->quoteItems->contains($quoteItem)) {
+            $this->quoteItems->add($quoteItem);
+            $quoteItem->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeQuoteItem(QuoteItem $quoteItem): static
+    {
+        if ($this->quoteItems->removeElement($quoteItem)) {
+            // set the owning side to null (unless already changed)
+            if ($quoteItem->getProduct() === $this) {
+                $quoteItem->setProduct(null);
             }
         }
 

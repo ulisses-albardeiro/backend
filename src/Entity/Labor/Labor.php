@@ -3,9 +3,12 @@
 namespace App\Entity\Labor;
 
 use App\Entity\Company;
+use App\Entity\QuoteItem;
 use App\Enum\Labor\LaborStatus;
 use App\Enum\Labor\LaborUnit;
 use App\Repository\Labor\LaborRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -46,6 +49,17 @@ class Labor
 
     #[ORM\Column(nullable: true, enumType: LaborUnit::class)]
     private ?LaborUnit $unit = null;
+
+    /**
+     * @var Collection<int, QuoteItem>
+     */
+    #[ORM\OneToMany(targetEntity: QuoteItem::class, mappedBy: 'labor')]
+    private Collection $quoteItems;
+
+    public function __construct()
+    {
+        $this->quoteItems = new ArrayCollection();
+    }
 
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
@@ -172,6 +186,36 @@ class Labor
     public function setUnit(?LaborUnit $unit): static
     {
         $this->unit = $unit;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, QuoteItem>
+     */
+    public function getQuoteItems(): Collection
+    {
+        return $this->quoteItems;
+    }
+
+    public function addQuoteItem(QuoteItem $quoteItem): static
+    {
+        if (!$this->quoteItems->contains($quoteItem)) {
+            $this->quoteItems->add($quoteItem);
+            $quoteItem->setLabor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeQuoteItem(QuoteItem $quoteItem): static
+    {
+        if ($this->quoteItems->removeElement($quoteItem)) {
+            // set the owning side to null (unless already changed)
+            if ($quoteItem->getLabor() === $this) {
+                $quoteItem->setLabor(null);
+            }
+        }
 
         return $this;
     }
