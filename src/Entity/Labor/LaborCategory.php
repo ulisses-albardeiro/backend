@@ -52,7 +52,7 @@ class LaborCategory
     /**
      * @var Collection<int, Labor>
      */
-    #[ORM\OneToMany(targetEntity: Labor::class, mappedBy: 'category', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Labor::class, mappedBy: 'category', orphanRemoval: false)]
     private Collection $labors;
 
     #[ORM\PrePersist]

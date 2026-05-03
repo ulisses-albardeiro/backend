@@ -21,7 +21,7 @@ class LaborCategoryService
     public function create(LaborCategoryInputDTO $dto, Company $company): LaborCategoryOutputDTO
     {
         $category = $this->mapper->toEntity($dto, $company);
-        
+
         $this->entityManager->persist($category);
         $this->entityManager->flush();
 
@@ -55,9 +55,8 @@ class LaborCategoryService
             throw new \Exception("LABOR_CATEGORY_NOT_FOUND");
         }
 
-        // O Mapper atualiza a entidade existente
         $category = $this->mapper->toEntity($dto, $company, $category);
-        
+
         $this->entityManager->flush();
 
         return $this->mapper->toOutput($category);
@@ -67,16 +66,7 @@ class LaborCategoryService
     {
         $category = $this->repository->findOneBy(['id' => $id, 'company' => $company]);
 
-        if (!$category) {
-            throw new \Exception("LABOR_CATEGORY_NOT_FOUND");
-        }
-
-        try {
-            $this->entityManager->remove($category);
-            $this->entityManager->flush();
-        } catch (\Exception $e) {
-            // Caso existam Labors vinculados a esta categoria e o banco impeça a deleção
-            throw new \Exception("CANNOT_DELETE_CATEGORY_IN_USE");
-        }
+        $this->entityManager->remove($category);
+        $this->entityManager->flush();
     }
 }
