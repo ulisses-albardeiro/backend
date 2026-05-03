@@ -6,9 +6,10 @@ use App\DTO\Request\Labor\LaborInputDTO;
 use App\DTO\Response\Labor\LaborOutputDTO;
 use App\Entity\Company;
 use App\Enum\Labor\LaborStatus;
+use App\Enum\Labor\LaborUnit;
 use App\Mapper\Labor\LaborMapper;
+use App\Repository\Labor\LaborCategoryRepository;
 use App\Repository\Labor\LaborRepository;
-use App\Service\FileService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -18,7 +19,7 @@ class LaborService
         private EntityManagerInterface $entityManager,
         private LaborRepository $laborRepository,
         private LaborMapper $laborMapper,
-        private FileService $fileService
+        private LaborCategoryRepository $categoryRepository,
     ) {}
 
     public function create(LaborInputDTO $dto, Company $company): LaborOutputDTO
@@ -28,7 +29,7 @@ class LaborService
 
         $this->entityManager->persist($labor);
 
-        
+
         $this->entityManager->flush();
 
         return $this->laborMapper->toOutput($labor);
@@ -54,7 +55,7 @@ class LaborService
         $labors = $this->laborRepository->findBy([
             'company' => $company,
         ]);
-        
+
         return array_map(
             fn($l) => $this->laborMapper->toOutput($l),
             $labors
@@ -64,10 +65,10 @@ class LaborService
     public function listActive(Company $company): array
     {
         $labors = $this->laborRepository->findBy([
-            'company' => $company, 
+            'company' => $company,
             'status' => LaborStatus::ACTIVE
         ]);
-        
+
         return array_map(
             fn($l) => $this->laborMapper->toOutput($l),
             $labors
@@ -102,5 +103,46 @@ class LaborService
             $labor->setStatus(LaborStatus::INACTIVE);
             $this->entityManager->flush();
         }
+    }
+
+    /**
+     * Cria serviços padrão associados às categorias recém-criadas.
+     */
+    public function createDefaultLabors(Company $company): void
+    {
+        $defaults = [
+            'Serviço de Instalação'  => 'Instalação',
+            'Serviço de Construção'  => 'Construção',
+            'Serviço de Manutenção'  => 'Manutenção',
+            'Consultoria Técnica'    => 'Consultoria',
+            'Serviço de Medição'     => 'Medição',
+        ];
+
+        foreach ($defaults as $laborName => $categoryName) {
+            $category = $this->categoryRepository->findOneBy([
+                'name' => $categoryName,
+                'company' => $company
+            ]);
+
+            if (!$category) {
+                continue;
+            }
+
+            $dto = new LaborInputDTO(
+                name: $laborName,
+                categoryId: $category->getId(),
+                description: "Serviço padrão de $laborName",
+                salePrice: 0,
+                unit: LaborUnit::UNIDADE,
+                status: LaborStatus::ACTIVE
+            );
+
+            $labor = $this->laborMapper->toEntity($dto);
+            $labor->setCompany($company);
+
+            $this->entityManager->persist($labor);
+        }
+
+        $this->entityManager->flush();
     }
 }
