@@ -109,4 +109,18 @@ class WorkOrderService
             $this->em->flush();
         }
     }
+
+    public function getByIdAndCompany(int $id, Company $company): ?WorkOrderOutputDTO
+    {
+        $workOrder = $this->repository->findOneBy([
+            'id' => $id,
+            'company' => $company
+        ]);
+
+        if (!$workOrder) {
+            return null;
+        }
+
+        return $this->mapper->toOutputDTO($workOrder);
+    }
 }

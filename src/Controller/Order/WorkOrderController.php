@@ -1,0 +1,111 @@
+<?php
+
+namespace App\Controller\Order;
+
+use App\Entity\User;
+use Psr\Log\LoggerInterface;
+use App\Service\Order\WorkOrderService;
+use App\DTO\Request\Order\WorkOrderInputDTO;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[Route('/api/work-order', name: 'api_work_order_', format: 'json')]
+final class WorkOrderController extends AbstractController
+{
+    public function __construct(
+        private WorkOrderService $service,
+        private LoggerInterface $logger,
+    ) {}
+
+    #[Route('', name: 'index', methods: ['GET'])]
+    public function index(): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        return $this->json($this->service->listAllByCompany($user->getCompany()));
+    }
+
+    #[Route('/{id}', name: 'show', methods: ['GET'])]
+    public function show(int $id): JsonResponse
+    {
+        try {
+            /** @var User $user */
+            $user = $this->getUser();
+            $workOrder = $this->service->getByIdAndCompany($id, $user->getCompany());
+
+            return $this->json($workOrder);
+        } catch (NotFoundHttpException $e) {
+            return $this->json(['message' => $e->getMessage()], 404);
+        }
+    }
+
+    #[Route('', name: 'store', methods: ['POST'])]
+    public function store(#[MapRequestPayload] WorkOrderInputDTO $dto): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        try {
+            $workOrder = $this->service->create($dto, $user->getCompany());
+            return $this->json($workOrder, 201);
+        } catch (BadRequestHttpException $e) {
+            return $this->json(['message' => $e->getMessage()], 400);
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to save work order.', [
+                'user_id' => $user->getId(),
+                'error' => $e->getMessage()
+            ]);
+            return $this->json(['message' => 'ERROR_SAVING_WORK_ORDER'], 500);
+        }
+    }
+
+    #[Route('/{id}', name: 'update', methods: ['PUT'])]
+    public function update(int $id, #[MapRequestPayload] WorkOrderInputDTO $dto): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        try {
+            $workOrder = $this->service->update($id, $dto, $user->getCompany());
+            return $this->json($workOrder, 200);
+        } catch (NotFoundHttpException $e) {
+            return $this->json(['message' => $e->getMessage()], 404);
+        } catch (BadRequestHttpException $e) {
+            return $this->json(['message' => $e->getMessage()], 400);
+        } catch (\Exception $e) {
+            $this->logger->error('Update work order error', [
+                'work_order_id' => $id,
+                'user_id' => $user->getId(),
+                'error' => $e->getMessage()
+            ]);
+            return $this->json(['message' => 'ERROR_UPDATING_WORK_ORDER'], 500);
+        }
+    }
+
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    public function delete(int $id): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        try {
+            $this->service->delete($id, $user->getCompany());
+            return $this->json(null, 204);
+        } catch (NotFoundHttpException $e) {
+            return $this->json(['message' => $e->getMessage()], 404);
+        } catch (\Exception $e) {
+            $this->logger->error('Delete work order error', [
+                'work_order_id' => $id,
+                'user_id' => $user->getId(),
+                'error' => $e->getMessage()
+            ]);
+            return $this->json(['message' => 'ERROR_DELETING_WORK_ORDER'], 500);
+        }
+    }
+}
