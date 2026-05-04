@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\Quote;
 
 use App\Entity\Labor\Labor;
 use App\Entity\Product\Product;

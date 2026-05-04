@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use BcMath\Number;
+use App\Entity\Quote\Quote;
 use App\Enum\PaymentMethod;
 use App\Enum\ReceiptStatus;
 use Doctrine\DBAL\Types\Types;

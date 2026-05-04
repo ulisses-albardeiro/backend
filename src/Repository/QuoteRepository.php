@@ -3,7 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Company;
-use App\Entity\Quote;
+use App\Entity\Quote\Quote;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

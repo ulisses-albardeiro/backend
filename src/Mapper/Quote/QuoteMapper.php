@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Mapper;
+namespace App\Mapper\Quote;
 
-use App\Entity\Quote;
+use App\Entity\Quote\Quote;
 use App\Entity\Company;
-use App\Entity\QuoteItem;
+use App\Entity\Quote\QuoteItem;
 use App\Enum\DiscountType;
-use App\DTO\Request\QuoteInputDTO;
-use App\DTO\Response\QuoteOutputDTO;
+use App\DTO\Request\Quote\QuoteInputDTO;
+use App\DTO\Response\Quote\QuoteOutputDTO;
 use App\Repository\CustomerRepository;
-use App\DTO\Response\QuoteItemOutputDTO;
+use App\DTO\Response\Quote\QuoteItemOutputDTO;
 
 class QuoteMapper
 {
@@ -49,6 +49,8 @@ class QuoteMapper
             $item->setDescription($itemDto->description);
             $item->setQuantity($itemDto->quantity);
             $item->setUnitPrice($itemDto->unit_price);
+            $item->setLabor($itemDto->laborId);
+            $item->setProduct($itemDto->productId);
             
             $quote->addQuoteItem($item);
         }
@@ -64,7 +66,9 @@ class QuoteMapper
                 description: $item->getDescription(),
                 quantity: $item->getQuantity(),
                 unitPrice: $item->getUnitPrice(),
-                totalPrice: $item->getTotalPrice()
+                totalPrice: $item->getTotalPrice(),
+                laborId: $item->getLabor(),
+                productId: $item->getProduct()
             );
         }, $quote->getQuoteItems()->toArray());
 

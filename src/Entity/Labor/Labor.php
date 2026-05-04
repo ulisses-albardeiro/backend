@@ -3,7 +3,7 @@
 namespace App\Entity\Labor;
 
 use App\Entity\Company;
-use App\Entity\QuoteItem;
+use App\Entity\Quote\QuoteItem;
 use App\Enum\Labor\LaborStatus;
 use App\Enum\Labor\LaborUnit;
 use App\Repository\Labor\LaborRepository;

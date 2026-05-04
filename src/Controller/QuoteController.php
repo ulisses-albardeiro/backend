@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use Psr\Log\LoggerInterface;
 use App\Service\QuoteService;
-use App\DTO\Request\QuoteInputDTO;
+use App\DTO\Request\Quote\QuoteInputDTO;
 use App\Service\Pdf\PdfGeneratorService;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Response;

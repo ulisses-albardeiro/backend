@@ -16,4 +16,10 @@ class QuoteItemInputDTO
     #[Assert\NotBlank]
     #[Assert\PositiveOrZero]
     public int $unit_price;
+
+    #[Assert\PositiveOrZero]
+    public int $LaborId;
+
+    #[Assert\PositiveOrZero]
+    public int $ProductId;
 }

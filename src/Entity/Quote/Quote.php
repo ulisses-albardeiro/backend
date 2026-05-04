@@ -1,7 +1,11 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\Quote;
 
+use App\Entity\Company;
+use App\Entity\Customer;
+use App\Entity\Quote\QuoteItem;
+use App\Entity\Receipt;
 use App\Enum\DiscountType;
 use App\Enum\QuoteStatus;
 use App\Repository\QuoteRepository;

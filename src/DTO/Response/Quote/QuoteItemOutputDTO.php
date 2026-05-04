@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DTO\Response;
+namespace App\DTO\Response\Quote;
 
 readonly class QuoteItemOutputDTO
 {
@@ -10,5 +10,7 @@ readonly class QuoteItemOutputDTO
         public string $quantity,
         public int $unitPrice,
         public int $totalPrice,
+        public ?int $laborId,
+        public ?int $productId,
     ) {}
 }

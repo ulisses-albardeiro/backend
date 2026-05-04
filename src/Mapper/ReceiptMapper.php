@@ -3,7 +3,7 @@
 namespace App\Mapper;
 
 use App\Entity\Receipt;
-use App\Entity\Quote;
+use App\Entity\Quote\Quote;
 use App\Entity\Customer;
 use App\Entity\Company;
 use App\DTO\Request\ReceiptInputDTO;

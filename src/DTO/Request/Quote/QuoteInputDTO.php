@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DTO\Request;
+namespace App\DTO\Request\Quote;
 
 use App\Enum\QuoteStatus;
 use DateTimeImmutable;

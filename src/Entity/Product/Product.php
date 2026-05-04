@@ -3,7 +3,7 @@
 namespace App\Entity\Product;
 
 use App\Entity\Company;
-use App\Entity\QuoteItem;
+use App\Entity\Quote\QuoteItem;
 use App\Enum\Product\ProductStatus;
 use App\Enum\Product\ProductUnit;
 use App\Repository\Product\ProductRepository;

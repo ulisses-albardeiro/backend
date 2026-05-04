@@ -2,14 +2,14 @@
 
 namespace App\Service;
 
-use App\Entity\Quote;
+use App\Entity\Quote\Quote;
 use App\Entity\Company;
-use App\Mapper\QuoteMapper;
+use App\Mapper\Quote\QuoteMapper;
 use App\Mapper\CompanyMapper;
 use App\Mapper\CustomerMapper;
-use App\DTO\Request\QuoteInputDTO;
+use App\DTO\Request\Quote\QuoteInputDTO;
 use App\Repository\QuoteRepository;
-use App\DTO\Response\QuoteOutputDTO;
+use App\DTO\Response\Quote\QuoteOutputDTO;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\Pdf\Documents\QuoteDocument;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;

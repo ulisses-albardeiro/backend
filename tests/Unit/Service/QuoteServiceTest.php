@@ -2,16 +2,16 @@
 
 namespace App\Tests\Unit\Service;
 
-use App\Entity\Quote;
+use App\Entity\Quote\Quote;
 use App\Entity\Company;
-use App\Mapper\QuoteMapper;
+use App\Mapper\Quote\QuoteMapper;
 use App\Service\FileService;
 use App\Mapper\CompanyMapper;
 use App\Mapper\CustomerMapper;
 use App\Service\QuoteService;
-use App\DTO\Request\QuoteInputDTO;
+use App\DTO\Request\Quote\QuoteInputDTO;
 use App\Repository\QuoteRepository;
-use App\DTO\Response\QuoteOutputDTO;
+use App\DTO\Response\Quote\QuoteOutputDTO;
 use PHPUnit\Framework\TestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
