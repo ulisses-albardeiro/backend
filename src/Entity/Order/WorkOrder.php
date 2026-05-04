@@ -72,6 +72,9 @@ class WorkOrder
     #[ORM\OneToMany(targetEntity: WorkOrderItem::class, mappedBy: 'workOrder', orphanRemoval: true)]
     private Collection $workOrderItems;
 
+    #[ORM\Column]
+    private ?int $totalAmount = null;
+
     public function __construct()
     {
         $this->workOrderItems = new ArrayCollection();
@@ -276,6 +279,18 @@ class WorkOrder
                 $workOrderItem->setWorkOrder(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getTotalAmount(): ?int
+    {
+        return $this->totalAmount;
+    }
+
+    public function setTotalAmount(int $totalAmount): static
+    {
+        $this->totalAmount = $totalAmount;
 
         return $this;
     }
