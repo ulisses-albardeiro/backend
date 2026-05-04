@@ -1,8 +1,7 @@
 <?php
-namespace App\DTO\Request;
+namespace App\DTO\Request\Quote;
 
 use Symfony\Component\Validator\Constraints as Assert;
-
 
 class QuoteItemInputDTO
 {
@@ -15,11 +14,11 @@ class QuoteItemInputDTO
 
     #[Assert\NotBlank]
     #[Assert\PositiveOrZero]
-    public int $unit_price;
+    public int $unitPrice;
 
-    #[Assert\PositiveOrZero]
-    public int $LaborId;
+    #[Assert\Positive]
+    public ?int $laborId;
 
-    #[Assert\PositiveOrZero]
-    public int $ProductId;
+    #[Assert\Positive]
+    public ?int $productId;
 }

@@ -27,6 +27,7 @@ readonly class QuoteOutputDTO
         public int $totalAmount,
         public ?string $description,
         public ?string $notes,
+        public ?string $internalNotes,
         public array $items,
     ) {}
 }

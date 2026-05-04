@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use App\Entity\Quote\Quote;
 use App\Entity\Company;
 use App\Mapper\Quote\QuoteMapper;
 use App\Mapper\CompanyMapper;

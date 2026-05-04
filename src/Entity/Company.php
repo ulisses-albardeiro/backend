@@ -9,6 +9,7 @@ use App\Entity\Product\InventoryMovement;
 use App\Entity\Product\Product;
 use App\Entity\Product\ProductCategory;
 use App\Entity\Product\Supplier;
+use App\Entity\Quote\Quote;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\CompanyRepository;
 use Doctrine\Common\Collections\Collection;

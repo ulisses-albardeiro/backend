@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Quote\Quote;
 use App\Enum\CustomerType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;

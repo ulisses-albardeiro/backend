@@ -15,12 +15,13 @@ class QuoteInputDTO
     public DateTimeImmutable $date;
 
     #[Assert\NotBlank]
-    public DateTimeImmutable $due_date;
+    public DateTimeImmutable $dueDate;
 
-    public string $discount_type = 'none';
-    public int $discount_value = 0;
-    public int $shipping_value = 0;
+    public string $discountType = 'none';
+    public int $discountValue = 0;
+    public int $shippingValue = 0;
     public ?string $description = null;
+    public ?string $internalNotes = null;
     public ?string $notes = null;
 
     #[Assert\NotBlank(message: "O campo Status é obrigatório")]
