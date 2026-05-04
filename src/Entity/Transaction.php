@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Order\WorkOrder;
 use App\Enum\TransactionType;
 use Doctrine\DBAL\Types\Types;
 use App\Enum\TransactionStatus;
@@ -41,6 +42,9 @@ class Transaction
     #[ORM\ManyToOne(inversedBy: 'transactions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Company $company = null;
+
+    #[ORM\OneToOne(mappedBy: 'transaction', cascade: ['persist', 'remove'])]
+    private ?WorkOrder $workOrder = null;
 
     public function getId(): ?int
     {
@@ -139,6 +143,23 @@ class Transaction
     public function setCompany(?Company $company): static
     {
         $this->company = $company;
+
+        return $this;
+    }
+
+    public function getWorkOrder(): ?WorkOrder
+    {
+        return $this->workOrder;
+    }
+
+    public function setWorkOrder(WorkOrder $workOrder): static
+    {
+        // set the owning side of the relation if necessary
+        if ($workOrder->getTransaction() !== $this) {
+            $workOrder->setTransaction($this);
+        }
+
+        $this->workOrder = $workOrder;
 
         return $this;
     }

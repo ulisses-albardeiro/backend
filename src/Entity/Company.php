@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Entity\Labor\Labor;
 use App\Entity\Labor\LaborCategory;
+use App\Entity\Order\WorkOrder;
 use App\Entity\Product\Brand;
 use App\Entity\Product\InventoryMovement;
 use App\Entity\Product\Product;
@@ -157,6 +158,12 @@ class Company
     #[ORM\OneToMany(targetEntity: Labor::class, mappedBy: 'company', orphanRemoval: true)]
     private Collection $labors;
 
+    /**
+     * @var Collection<int, WorkOrder>
+     */
+    #[ORM\OneToMany(targetEntity: WorkOrder::class, mappedBy: 'company', orphanRemoval: true)]
+    private Collection $workOrders;
+
     public function __construct()
     {
         $this->customers = new ArrayCollection();
@@ -172,6 +179,7 @@ class Company
         $this->inventoryMovements = new ArrayCollection();
         $this->laborCategories = new ArrayCollection();
         $this->labors = new ArrayCollection();
+        $this->workOrders = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -800,6 +808,36 @@ class Company
             // set the owning side to null (unless already changed)
             if ($labor->getCompany() === $this) {
                 $labor->setCompany(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, WorkOrder>
+     */
+    public function getWorkOrders(): Collection
+    {
+        return $this->workOrders;
+    }
+
+    public function addWorkOrder(WorkOrder $workOrder): static
+    {
+        if (!$this->workOrders->contains($workOrder)) {
+            $this->workOrders->add($workOrder);
+            $workOrder->setCompany($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWorkOrder(WorkOrder $workOrder): static
+    {
+        if ($this->workOrders->removeElement($workOrder)) {
+            // set the owning side to null (unless already changed)
+            if ($workOrder->getCompany() === $this) {
+                $workOrder->setCompany(null);
             }
         }
 

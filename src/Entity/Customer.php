@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Order\WorkOrder;
 use App\Entity\Quote\Quote;
 use App\Enum\CustomerType;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -95,11 +96,18 @@ class Customer
     #[ORM\OneToMany(targetEntity: Receipt::class, mappedBy: 'customer')]
     private Collection $receipts;
 
+    /**
+     * @var Collection<int, WorkOrder>
+     */
+    #[ORM\OneToMany(targetEntity: WorkOrder::class, mappedBy: 'customer', orphanRemoval: true)]
+    private Collection $workOrders;
+
     public function __construct()
     {
         $this->transactions = new ArrayCollection();
         $this->quotes = new ArrayCollection();
         $this->receipts = new ArrayCollection();
+        $this->workOrders = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -431,6 +439,36 @@ class Customer
             // set the owning side to null (unless already changed)
             if ($receipt->getCustomer() === $this) {
                 $receipt->setCustomer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, WorkOrder>
+     */
+    public function getWorkOrders(): Collection
+    {
+        return $this->workOrders;
+    }
+
+    public function addWorkOrder(WorkOrder $workOrder): static
+    {
+        if (!$this->workOrders->contains($workOrder)) {
+            $this->workOrders->add($workOrder);
+            $workOrder->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWorkOrder(WorkOrder $workOrder): static
+    {
+        if ($this->workOrders->removeElement($workOrder)) {
+            // set the owning side to null (unless already changed)
+            if ($workOrder->getCustomer() === $this) {
+                $workOrder->setCustomer(null);
             }
         }
 

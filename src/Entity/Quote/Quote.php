@@ -4,6 +4,7 @@ namespace App\Entity\Quote;
 
 use App\Entity\Company;
 use App\Entity\Customer;
+use App\Entity\Order\WorkOrder;
 use App\Entity\Quote\QuoteItem;
 use App\Entity\Receipt;
 use App\Enum\DiscountType;
@@ -78,10 +79,17 @@ class Quote
     #[ORM\OneToMany(targetEntity: Receipt::class, mappedBy: 'quote')]
     private Collection $receipts;
 
+    /**
+     * @var Collection<int, WorkOrder>
+     */
+    #[ORM\OneToMany(targetEntity: WorkOrder::class, mappedBy: 'quote')]
+    private Collection $workOrders;
+
     public function __construct()
     {
         $this->quoteItems = new ArrayCollection();
         $this->receipts = new ArrayCollection();
+        $this->workOrders = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -343,6 +351,36 @@ class Quote
             // set the owning side to null (unless already changed)
             if ($receipt->getQuote() === $this) {
                 $receipt->setQuote(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, WorkOrder>
+     */
+    public function getWorkOrders(): Collection
+    {
+        return $this->workOrders;
+    }
+
+    public function addWorkOrder(WorkOrder $workOrder): static
+    {
+        if (!$this->workOrders->contains($workOrder)) {
+            $this->workOrders->add($workOrder);
+            $workOrder->setQuote($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWorkOrder(WorkOrder $workOrder): static
+    {
+        if ($this->workOrders->removeElement($workOrder)) {
+            // set the owning side to null (unless already changed)
+            if ($workOrder->getQuote() === $this) {
+                $workOrder->setQuote(null);
             }
         }
 
