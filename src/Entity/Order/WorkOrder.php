@@ -8,6 +8,8 @@ use App\Entity\Quote\Quote;
 use App\Entity\Transaction;
 use App\Enum\Order\WorkOrderStatus;
 use App\Repository\Order\WorkOrderRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -63,6 +65,17 @@ class WorkOrder
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $equipment = null;
+
+    /**
+     * @var Collection<int, WorkOrderItem>
+     */
+    #[ORM\OneToMany(targetEntity: WorkOrderItem::class, mappedBy: 'workOrder', orphanRemoval: true)]
+    private Collection $workOrderItems;
+
+    public function __construct()
+    {
+        $this->workOrderItems = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -233,6 +246,36 @@ class WorkOrder
     public function setEquipment(?string $equipment): static
     {
         $this->equipment = $equipment;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, WorkOrderItem>
+     */
+    public function getWorkOrderItems(): Collection
+    {
+        return $this->workOrderItems;
+    }
+
+    public function addWorkOrderItem(WorkOrderItem $workOrderItem): static
+    {
+        if (!$this->workOrderItems->contains($workOrderItem)) {
+            $this->workOrderItems->add($workOrderItem);
+            $workOrderItem->setWorkOrder($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWorkOrderItem(WorkOrderItem $workOrderItem): static
+    {
+        if ($this->workOrderItems->removeElement($workOrderItem)) {
+            // set the owning side to null (unless already changed)
+            if ($workOrderItem->getWorkOrder() === $this) {
+                $workOrderItem->setWorkOrder(null);
+            }
+        }
 
         return $this;
     }

@@ -3,6 +3,7 @@
 namespace App\Entity\Product;
 
 use App\Entity\Company;
+use App\Entity\Order\WorkOrderItem;
 use App\Entity\Quote\QuoteItem;
 use App\Enum\Product\ProductStatus;
 use App\Enum\Product\ProductUnit;
@@ -92,6 +93,12 @@ class Product
     #[ORM\OneToMany(targetEntity: QuoteItem::class, mappedBy: 'product')]
     private Collection $quoteItems;
 
+    /**
+     * @var Collection<int, WorkOrderItem>
+     */
+    #[ORM\OneToMany(targetEntity: WorkOrderItem::class, mappedBy: 'product')]
+    private Collection $workOrderItems;
+
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
@@ -105,6 +112,7 @@ class Product
         $this->productImages = new ArrayCollection();
         $this->inventoryMovements = new ArrayCollection();
         $this->quoteItems = new ArrayCollection();
+        $this->workOrderItems = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -400,6 +408,36 @@ class Product
             // set the owning side to null (unless already changed)
             if ($quoteItem->getProduct() === $this) {
                 $quoteItem->setProduct(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, WorkOrderItem>
+     */
+    public function getWorkOrderItems(): Collection
+    {
+        return $this->workOrderItems;
+    }
+
+    public function addWorkOrderItem(WorkOrderItem $workOrderItem): static
+    {
+        if (!$this->workOrderItems->contains($workOrderItem)) {
+            $this->workOrderItems->add($workOrderItem);
+            $workOrderItem->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWorkOrderItem(WorkOrderItem $workOrderItem): static
+    {
+        if ($this->workOrderItems->removeElement($workOrderItem)) {
+            // set the owning side to null (unless already changed)
+            if ($workOrderItem->getProduct() === $this) {
+                $workOrderItem->setProduct(null);
             }
         }
 

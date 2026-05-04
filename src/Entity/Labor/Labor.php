@@ -3,6 +3,7 @@
 namespace App\Entity\Labor;
 
 use App\Entity\Company;
+use App\Entity\Order\WorkOrderItem;
 use App\Entity\Quote\QuoteItem;
 use App\Enum\Labor\LaborStatus;
 use App\Enum\Labor\LaborUnit;
@@ -56,9 +57,16 @@ class Labor
     #[ORM\OneToMany(targetEntity: QuoteItem::class, mappedBy: 'labor')]
     private Collection $quoteItems;
 
+    /**
+     * @var Collection<int, WorkOrderItem>
+     */
+    #[ORM\OneToMany(targetEntity: WorkOrderItem::class, mappedBy: 'labor')]
+    private Collection $workOrderItems;
+
     public function __construct()
     {
         $this->quoteItems = new ArrayCollection();
+        $this->workOrderItems = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -214,6 +222,36 @@ class Labor
             // set the owning side to null (unless already changed)
             if ($quoteItem->getLabor() === $this) {
                 $quoteItem->setLabor(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, WorkOrderItem>
+     */
+    public function getWorkOrderItems(): Collection
+    {
+        return $this->workOrderItems;
+    }
+
+    public function addWorkOrderItem(WorkOrderItem $workOrderItem): static
+    {
+        if (!$this->workOrderItems->contains($workOrderItem)) {
+            $this->workOrderItems->add($workOrderItem);
+            $workOrderItem->setLabor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWorkOrderItem(WorkOrderItem $workOrderItem): static
+    {
+        if ($this->workOrderItems->removeElement($workOrderItem)) {
+            // set the owning side to null (unless already changed)
+            if ($workOrderItem->getLabor() === $this) {
+                $workOrderItem->setLabor(null);
             }
         }
 
