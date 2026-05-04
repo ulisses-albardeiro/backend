@@ -19,7 +19,6 @@ readonly class WorkOrderOutputDTO
         public ?int $quoteId,
         public string $status,
         public string $statusLabel,
-        public string $statusColor,
         public string $problemDescription,
         public ?string $technicalReport,
         public ?string $equipment,
