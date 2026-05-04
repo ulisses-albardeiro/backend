@@ -91,7 +91,7 @@ class Quote
             $year = date('dmY');
             $uniquePart = strtoupper(substr(uniqid(), -4));
 
-            $this->code = sprintf('REC-%s-%s', $year, $uniquePart);
+            $this->code = sprintf('ORC-%s-%s', $year, $uniquePart);
         }
     }
 
