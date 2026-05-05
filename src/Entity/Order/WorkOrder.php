@@ -69,7 +69,7 @@ class WorkOrder
     /**
      * @var Collection<int, WorkOrderItem>
      */
-    #[ORM\OneToMany(targetEntity: WorkOrderItem::class, mappedBy: 'workOrder', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: WorkOrderItem::class, mappedBy: 'workOrder', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $workOrderItems;
 
     #[ORM\Column]

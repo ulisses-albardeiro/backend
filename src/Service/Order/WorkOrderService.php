@@ -80,6 +80,7 @@ class WorkOrderService
             $category->setStatus(true);
 
             $this->em->persist($category);
+            $this->em->flush();
         }
 
 

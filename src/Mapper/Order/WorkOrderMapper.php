@@ -32,7 +32,7 @@ class WorkOrderMapper
 
         $workOrder->setCompany($company);
         $workOrder->setCustomer($customer);
-        $workOrder->setCode($dto->code);
+        
         $workOrder->setTitle($dto->title);
         $workOrder->setStatus($dto->status);
         $workOrder->setProblemDescription($dto->problemDescription);
@@ -41,6 +41,13 @@ class WorkOrderMapper
         $workOrder->setStartDate($dto->startDate);
         $workOrder->setEndDate($dto->endDate);
         
+        if (!$dto->quoteId) {
+            $year = date('dmY');
+            $uniquePart = strtoupper(substr(uniqid(), -4));
+            $code = sprintf('OS-%s-%s', $year, $uniquePart);
+            $workOrder->setCode($code);
+        }
+
         if ($workOrder->getCreatedAt() === null) {
             $workOrder->setCreatedAt(new \DateTimeImmutable());
         }

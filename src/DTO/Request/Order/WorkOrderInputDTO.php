@@ -12,8 +12,7 @@ class WorkOrderInputDTO
     #[Assert\Length(max: 255)]
     public string $title;
 
-    #[Assert\NotBlank(message: "O código da OS é obrigatório")]
-    public string $code;
+    public ?string $code;
 
     #[Assert\NotBlank(message: "O cliente é obrigatório")]
     #[Assert\Positive]
