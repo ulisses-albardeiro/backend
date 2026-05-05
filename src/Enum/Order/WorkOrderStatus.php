@@ -10,7 +10,7 @@ enum WorkOrderStatus: string
     case IN_PROGRESS = 'in_progress';
     case COMPLETED = 'completed';
     case CANCELED = 'canceled';
-    case WAITING_PARTES = 'waiting_parts'
+    case WAITING_PARTES = 'waiting_parts';
 
     public function getLabel(): string
     {
