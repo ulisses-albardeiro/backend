@@ -9,7 +9,8 @@ enum WorkOrderStatus: string
     case OPEN = 'open';
     case IN_PROGRESS = 'in_progress';
     case COMPLETED = 'completed';
-    case CANCELLED = 'cancelled';
+    case CANCELED = 'canceled';
+    case WAITING_PARTES = 'waiting_parts'
 
     public function getLabel(): string
     {
@@ -19,7 +20,8 @@ enum WorkOrderStatus: string
             self::OPEN => 'Aberta',
             self::IN_PROGRESS => 'Em progresso',
             self::COMPLETED => 'Completada',
-            self::CANCELLED => 'Cancelado',
+            self::CANCELED => 'Cancelado',
+            self::WAITING_PARTES => 'Aguardando Peças'
         };
     }
 }
