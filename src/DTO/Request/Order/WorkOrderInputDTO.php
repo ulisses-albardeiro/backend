@@ -16,9 +16,7 @@ class WorkOrderInputDTO
 
     public ?int $customerId;
 
-    #[Assert\NotBlank(message: "A empresa é obrigatória")]
-    #[Assert\Positive]
-    public int $companyId;
+    public ?int $companyId;
 
     public ?int $quoteId = null;
 
