@@ -28,7 +28,6 @@ class CompanyMapper
         $company->setNeighborhood($dto->neighborhood);
         $company->setCity($dto->city);
         $company->setState($dto->state);
-        $company->setLogo($dto->logo);
 
         return $company;
     }
