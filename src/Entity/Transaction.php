@@ -36,7 +36,7 @@ class Transaction
     #[ORM\JoinColumn(nullable: false)]
     private ?Category $category = null;
 
-    #[ORM\ManyToOne(inversedBy: 'transactions')]
+    #[ORM\ManyToOne(inversedBy: 'transactions', cascade: ['persist', 'remove'])]
     private ?Customer $customer = null;
 
     #[ORM\ManyToOne(inversedBy: 'transactions')]

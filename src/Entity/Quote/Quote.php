@@ -27,7 +27,7 @@ class Quote
     #[ORM\Column(length: 255)]
     private ?string $code = null;
 
-    #[ORM\ManyToOne(inversedBy: 'quotes')]
+    #[ORM\ManyToOne(inversedBy: 'quotes', cascade: ['persist', 'remove'])]
     private ?Customer $customer = null;
 
     #[ORM\Column(type: 'string', enumType: QuoteStatus::class)]

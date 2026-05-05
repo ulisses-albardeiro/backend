@@ -36,7 +36,7 @@ class Receipt
     #[ORM\ManyToOne(inversedBy: 'receipts')]
     private ?Quote $quote = null;
 
-    #[ORM\ManyToOne(inversedBy: 'receipts')]
+    #[ORM\ManyToOne(inversedBy: 'receipts', cascade: ['persist', 'remove'])]
     private ?Customer $customer = null;
 
     #[ORM\ManyToOne(inversedBy: 'receipts')]

@@ -81,19 +81,19 @@ class Customer
     /**
      * @var Collection<int, Transaction>
      */
-    #[ORM\OneToMany(targetEntity: Transaction::class, mappedBy: 'customer')]
+    #[ORM\OneToMany(targetEntity: Transaction::class, mappedBy: 'customer', orphanRemoval:true)]
     private Collection $transactions;
 
     /**
      * @var Collection<int, Quote>
      */
-    #[ORM\OneToMany(targetEntity: Quote::class, mappedBy: 'customer')]
+    #[ORM\OneToMany(targetEntity: Quote::class, mappedBy: 'customer', orphanRemoval:true)]
     private Collection $quotes;
 
     /**
      * @var Collection<int, Receipt>
      */
-    #[ORM\OneToMany(targetEntity: Receipt::class, mappedBy: 'customer')]
+    #[ORM\OneToMany(targetEntity: Receipt::class, mappedBy: 'customer', orphanRemoval:true)]
     private Collection $receipts;
 
     /**
