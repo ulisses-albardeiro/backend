@@ -12,8 +12,12 @@ use App\DTO\Request\Order\WorkOrderInputDTO;
 use App\DTO\Request\TransactionInputDTO;
 use App\DTO\Response\Order\WorkOrderOutputDTO;
 use App\Entity\Category;
+use App\Mapper\CompanyMapper;
+use App\Mapper\CustomerMapper;
 use App\Repository\CategoryRepository;
 use App\Repository\Order\WorkOrderRepository;
+use App\Service\FileService;
+use App\Service\Pdf\Documents\OrderDocument;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -25,6 +29,9 @@ class WorkOrderService
         private EntityManagerInterface $em,
         private WorkOrderRepository $repository,
         private CategoryRepository $categoryRepo,
+        private CompanyMapper $companyMapper,
+        private CustomerMapper $customerMapper,
+        private FileService $fileService,
     ) {}
 
     public function create(WorkOrderInputDTO $dto, Company $company): WorkOrderOutputDTO
@@ -123,5 +130,22 @@ class WorkOrderService
         }
 
         return $this->mapper->toOutputDTO($workOrder);
+    }
+
+    public function getOrderDocument(int $id, Company $company): OrderDocument
+    {
+        $quoteEntity = $this->repository->findByIdAndCompany($id, $company);
+
+        if (!$quoteEntity) {
+            throw new NotFoundHttpException('QUOTE_NOT_FOUND');
+        }
+
+        $quoteDto = $this->mapper->toOutputDTO($quoteEntity);
+        $logoBase64 = $this->fileService->getBase64($company->getSubDir('/logo'), $company->getLogo());
+
+        $companyDto = $this->companyMapper->toOutputDTO($company, $logoBase64);
+        $customerDto = $this->customerMapper->toOutputDTO($quoteEntity->getCustomer());
+
+        return new OrderDocument($quoteDto, $companyDto, $customerDto);
     }
 }

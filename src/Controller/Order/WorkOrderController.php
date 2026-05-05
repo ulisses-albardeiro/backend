@@ -6,12 +6,14 @@ use App\Entity\User;
 use Psr\Log\LoggerInterface;
 use App\Service\Order\WorkOrderService;
 use App\DTO\Request\Order\WorkOrderInputDTO;
+use App\Service\Pdf\PdfGeneratorService;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
@@ -106,6 +108,34 @@ final class WorkOrderController extends AbstractController
                 'error' => $e->getMessage()
             ]);
             return $this->json(['message' => 'ERROR_DELETING_WORK_ORDER'], 500);
+        }
+    }
+
+    #[Route('/{id}/pdf', name: 'pdf', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function downloadPdf(int $id, PdfGeneratorService $pdfGenerator): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        try {
+            $document = $this->service->getOrderDocument($id, $user->getCompany());
+
+            $pdfBinary = $pdfGenerator->generate($document);
+
+            return new Response($pdfBinary, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $document->getFileName() . '"'
+            ]);
+        } catch (NotFoundHttpException $e) {
+            return $this->json(['message' => $e->getMessage()], 404);
+        } catch (\Exception $e) {
+            $this->logger->error('PDF Generation Error', [
+                'id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            return $this->json([
+                'message' => 'ERROR_GENERATING_PDF'
+            ], 500);
         }
     }
 }
