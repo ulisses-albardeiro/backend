@@ -6,14 +6,14 @@ enum TransactionStatus: string
 {
     case PENDING = 'pending';
     case CONFIRMED = 'confirmed';
-    case CANCELLED = 'cancelled';
+    case CANCELED = 'canceled';
 
     public function getLabel(): string
     {
         return match($this) {
             self::PENDING => 'Pendente',
             self::CONFIRMED => 'Confirmado',
-            self::CANCELLED => 'Cancelado',
+            self::CANCELED => 'Cancelado',
         };
     }
 }
