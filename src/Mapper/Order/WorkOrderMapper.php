@@ -41,7 +41,7 @@ class WorkOrderMapper
         $workOrder->setStartDate($dto->startDate);
         $workOrder->setEndDate($dto->endDate);
         
-        if (!$dto->quoteId) {
+        if (!$workOrder->getId()) {
             $year = date('dmY');
             $uniquePart = strtoupper(substr(uniqid(), -4));
             $code = sprintf('OS-%s-%s', $year, $uniquePart);
