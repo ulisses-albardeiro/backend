@@ -2,6 +2,7 @@
 
 namespace App\Repository\Order;
 
+use App\Entity\Company;
 use App\Entity\Order\WorkOrder;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -16,28 +17,17 @@ class WorkOrderRepository extends ServiceEntityRepository
         parent::__construct($registry, WorkOrder::class);
     }
 
-    //    /**
-    //     * @return WorkOrder[] Returns an array of WorkOrder objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('w')
-    //            ->andWhere('w.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('w.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findByIdAndCompany(int $id, Company $company): ?WorkOrder
+    {
+        $order = $this->createQueryBuilder('q')
+            ->join('q.customer', 'c')
+            ->where('q.id = :id')
+            ->andWhere('c.company = :company')
+            ->setParameter('id', $id)
+            ->setParameter('company', $company)
+            ->getQuery()
+            ->getOneOrNullResult();
 
-    //    public function findOneBySomeField($value): ?WorkOrder
-    //    {
-    //        return $this->createQueryBuilder('w')
-    //            ->andWhere('w.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        return $order;
+    }
 }
