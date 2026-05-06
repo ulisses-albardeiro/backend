@@ -24,7 +24,7 @@ class WorkOrder
     #[ORM\Column(length: 255)]
     private ?string $code = null;
 
-    #[ORM\ManyToOne(inversedBy: 'workOrders', cascade: ['persist', 'remove'])]
+    #[ORM\ManyToOne(inversedBy: 'workOrders')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Customer $customer = null;
 
