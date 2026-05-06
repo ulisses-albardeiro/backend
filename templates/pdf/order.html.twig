@@ -157,7 +157,7 @@
                 <td class="info-box">
                     <div class="section-title">Informações Técnicas</div>
                     {% if order.equipment %}
-                        <strong>Local da execução:</strong> {{ order.equipment }}<br>
+                        <strong>Equipamento/Local:</strong> {{ order.equipment }}<br>
                     {% endif %}
                     <strong>Início:</strong> {{ order.startDate ? order.startDate|date('d/m/Y') : '-' }}<br>
                     <strong>Previsão/Fim:</strong> {{ order.endDate ? order.endDate|date('d/m/Y') : '-' }}
