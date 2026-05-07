@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\Customer;
 
+use App\Entity\Company;
 use App\Entity\Customer\CustomerAsset;
 use App\Entity\Order\WorkOrder;
 use App\Entity\Quote\Quote;
+use App\Entity\Receipt;
+use App\Entity\Transaction;
 use App\Enum\CustomerType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;

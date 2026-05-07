@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Customer\Customer;
 use App\Entity\Labor\Labor;
 use App\Entity\Labor\LaborCategory;
 use App\Entity\Order\WorkOrder;

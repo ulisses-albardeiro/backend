@@ -3,7 +3,7 @@
 namespace App\Entity\Order;
 
 use App\Entity\Company;
-use App\Entity\Customer;
+use App\Entity\Customer\Customer;
 use App\Entity\Quote\Quote;
 use App\Entity\Transaction;
 use App\Enum\Order\WorkOrderStatus;

@@ -2,7 +2,7 @@
 
 namespace App\Factory;
 
-use App\Entity\Customer;
+use App\Entity\Customer\Customer;
 use App\Enum\CustomerType;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 

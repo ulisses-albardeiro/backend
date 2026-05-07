@@ -3,7 +3,7 @@
 namespace App\Mapper;
 
 use App\Entity\Company;
-use App\Entity\Customer;
+use App\Entity\Customer\Customer;
 use App\DTO\Request\CustomerInputDTO;
 use App\DTO\Response\CustomerOutputDTO;
 

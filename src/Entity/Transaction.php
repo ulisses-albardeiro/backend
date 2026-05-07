@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Customer\Customer;
 use App\Entity\Order\WorkOrder;
 use App\Enum\TransactionType;
 use Doctrine\DBAL\Types\Types;

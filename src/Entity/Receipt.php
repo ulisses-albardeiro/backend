@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Customer\Customer;
 use App\Entity\Quote\Quote;
 use App\Enum\PaymentMethod;
 use App\Enum\ReceiptStatus;

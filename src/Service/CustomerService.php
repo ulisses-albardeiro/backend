@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Company;
-use App\Entity\Customer;
+use App\Entity\Customer\Customer;
 use App\Mapper\CustomerMapper;
 use App\DTO\Request\CustomerInputDTO;
 use App\Repository\CustomerRepository;

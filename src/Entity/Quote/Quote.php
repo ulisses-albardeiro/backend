@@ -3,7 +3,7 @@
 namespace App\Entity\Quote;
 
 use App\Entity\Company;
-use App\Entity\Customer;
+use App\Entity\Customer\Customer;
 use App\Entity\Order\WorkOrder;
 use App\Entity\Quote\QuoteItem;
 use App\Entity\Receipt;

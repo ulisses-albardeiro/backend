@@ -2,7 +2,6 @@
 
 namespace App\Entity\Customer;
 
-use App\Entity\Customer;
 use App\Repository\Customer\CustomerAssetRepository;
 use Doctrine\ORM\Mapping as ORM;
 

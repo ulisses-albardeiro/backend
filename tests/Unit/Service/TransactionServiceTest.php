@@ -3,7 +3,7 @@
 namespace App\Tests\Unit\Service;
 
 use App\Entity\Company;
-use App\Entity\Customer;
+use App\Entity\Customer\Customer;
 use App\Entity\Category;
 use App\Entity\Transaction;
 use PHPUnit\Framework\TestCase;
