@@ -14,18 +14,8 @@ readonly class UserInputDTO
         #[Assert\NotBlank]
         #[Assert\Email]
         #[Assert\Length(max: 180)]
-        public string $email,
+        public string $email,       
 
-        /**
-         * @var list<string>
-         */
-        #[Assert\All([
-            new Assert\Type('string'),
-            new Assert\NotBlank()
-        ])]
-        public array $roles = ['ROLE_USER'],
-
-        #[Assert\NotBlank(groups: ['create'])]
         #[Assert\Length(min: 8, max: 255)]
         public ?string $password = null,
 

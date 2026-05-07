@@ -19,7 +19,7 @@ class UserMapper
 
         $user->setName($dto->name);
         $user->setEmail($dto->email);
-        $user->setRoles($dto->roles);
+        $user->setRoles(['ROLE_USER']);
         $user->setPhone($dto->phone);
         $user->setGoogleId($dto->googleId);
 
