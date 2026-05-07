@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Customer\CustomerAsset;
 use App\Entity\Order\WorkOrder;
 use App\Entity\Quote\Quote;
 use App\Enum\CustomerType;
@@ -102,12 +103,19 @@ class Customer
     #[ORM\OneToMany(targetEntity: WorkOrder::class, mappedBy: 'customer', orphanRemoval: true)]
     private Collection $workOrders;
 
+    /**
+     * @var Collection<int, CustomerAsset>
+     */
+    #[ORM\OneToMany(targetEntity: CustomerAsset::class, mappedBy: 'customer', orphanRemoval: true)]
+    private Collection $customerAssets;
+
     public function __construct()
     {
         $this->transactions = new ArrayCollection();
         $this->quotes = new ArrayCollection();
         $this->receipts = new ArrayCollection();
         $this->workOrders = new ArrayCollection();
+        $this->customerAssets = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -469,6 +477,36 @@ class Customer
             // set the owning side to null (unless already changed)
             if ($workOrder->getCustomer() === $this) {
                 $workOrder->setCustomer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CustomerAsset>
+     */
+    public function getCustomerAssets(): Collection
+    {
+        return $this->customerAssets;
+    }
+
+    public function addCustomerAsset(CustomerAsset $customerAsset): static
+    {
+        if (!$this->customerAssets->contains($customerAsset)) {
+            $this->customerAssets->add($customerAsset);
+            $customerAsset->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCustomerAsset(CustomerAsset $customerAsset): static
+    {
+        if ($this->customerAssets->removeElement($customerAsset)) {
+            // set the owning side to null (unless already changed)
+            if ($customerAsset->getCustomer() === $this) {
+                $customerAsset->setCustomer(null);
             }
         }
 
