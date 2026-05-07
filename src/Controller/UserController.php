@@ -2,20 +2,21 @@
 
 namespace App\Controller;
 
+use App\DTO\Request\User\UserInputDTO;
 use App\Service\UserService;
 use Psr\Log\LoggerInterface;
-use App\DTO\Response\CompanyOutputDTO;
 use App\Service\CompanyService;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 
 final class UserController extends AbstractController
 {
     public function __construct(
         private LoggerInterface $logger,
+        private UserService $userService,
     ) {}
 
     #[Route('api/me', name: 'app_me')]
@@ -37,26 +38,20 @@ final class UserController extends AbstractController
     }
 
     #[Route('api/register', name: 'app_register', methods: ['POST'])]
-    public function register(Request $request, UserService $userService): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true);
-
-        if (!$data || !isset($data['email'], $data['password'], $data['phone'], $data['name'])) {
-            return $this->json(['error' => 'INVALID_INPUT_DATA'], 400);
-        }
-
+    public function register(#[MapRequestPayload()] UserInputDTO $dto): JsonResponse
+    {    
         try {
-            $user = $userService->create($data);
+            $user = $this->userService->create($dto);
             return $this->json(['message' => 'USER_CREATED_SUCCESS'], 201);
         } catch (\InvalidArgumentException $e) {
             return $this->json([
                 'error' => $e->getMessage()
             ], 400);
         } catch (\Exception $e) {
-            $this->logger->error('User registration error.', [
-                'email' => $data['email'],
-                'phone' => $data['phone'],
-                'name' => $data['name'],
+            $this->logger->error('Erro de registro de usuário.', [
+                'email' => $dto->email,
+                'phone' => $dto->phone,
+                'name' => $dto->name,
                 'exception' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);

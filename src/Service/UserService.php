@@ -2,7 +2,9 @@
 
 namespace App\Service;
 
-use App\Entity\User;
+use App\DTO\Request\User\UserInputDTO;
+use App\DTO\Response\User\UserOutputDTO;
+use App\Mapper\UserMapper;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -13,32 +15,25 @@ class UserService
         private UserRepository $userRepository,
         private EntityManagerInterface $entityManager,
         private UserPasswordHasherInterface $passwordHasher,
+        private UserMapper $userMapper,
     ) {}
 
-    public function create(array $data): User
+    public function create(UserInputDTO $dto): UserOutputDTO
     {
-        $existingUser = $this->userRepository->findOneBy(['email' => $data['email']]);
+        $existingUser = $this->userRepository->findOneBy(['email' => $dto->email]);
 
         if ($existingUser) {
             throw new \InvalidArgumentException("EMAIL_ALREADY_EXISTS");
         }
 
-        if (strlen($data['name']) > 255) {
+        if (strlen($dto->name) > 255) {
             throw new \InvalidArgumentException("NAME_TOO_LONG");
         }
 
-        $user = new User();
-        $user->setName($data['name']);
-        $user->setEmail($data['email']);
-        $user->setPhone($data['phone']);
-
-        $hashedPassword = $this->passwordHasher->hashPassword($user, $data['password']);
-        $user->setPassword($hashedPassword);
-        $user->setRoles(['ROLE_USER']);
-
+        $user = $this->userMapper->toEntity($dto);
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        return $user;
+        return $this->userMapper->toOutputDTO($user);
     }
 }
