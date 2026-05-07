@@ -94,7 +94,7 @@ class WorkOrderService
         $tDto = new TransactionInputDTO();
         $tDto->description = "OS: " . $workOrder->getCode() . " - " . $workOrder->getTitle();
         $tDto->amount = $workOrder->getTotalAmount();
-        $tDto->date = (new \DateTimeImmutable())->format('Y-m-d');
+        $tDto->date = new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'))->format('Y-m-d');
         $tDto->type = TransactionType::INCOME->value;
         $tDto->status = TransactionStatus::PENDING->value;
         $tDto->categoryId = $category->getId();

@@ -49,9 +49,9 @@ class WorkOrderMapper
         }
 
         if ($workOrder->getCreatedAt() === null) {
-            $workOrder->setCreatedAt(new \DateTimeImmutable());
+            $workOrder->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')));
         }
-        $workOrder->setUpdatedAt(new \DateTimeImmutable());
+        $workOrder->setUpdatedAt(new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')));
 
         if ($dto->quoteId) {
             $workOrder->setQuote($this->em->getReference(Quote::class, $dto->quoteId));

@@ -58,7 +58,7 @@ class Receipt
     #[ORM\PrePersist]
     public function setInitialValues(): void
     {
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
         if ($this->status === null) {
             $this->status = ReceiptStatus::ACTIVE;
         }
@@ -74,7 +74,7 @@ class Receipt
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
     }
 
     public function getId(): ?int

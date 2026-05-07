@@ -35,7 +35,7 @@ class PasswordResetRequestService
         $request = new PasswordResetRequest();
         $request->setUser($user);
         $request->setCode((string) random_int(100000, 999999));
-        $request->setCreatedAt(new \DateTimeImmutable());
+        $request->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')));
         $request->setExpiresAt(new \DateTimeImmutable('+15 minutes'));
         $request->setIsUsed(false);
 
@@ -61,7 +61,7 @@ class PasswordResetRequestService
             'isUsed' => false
         ]);
 
-        if (!$request || $request->getExpiresAt() < new \DateTimeImmutable()) {
+        if (!$request || $request->getExpiresAt() < new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'))) {
             return false;
         }
 
