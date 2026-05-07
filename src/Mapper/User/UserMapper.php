@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Mapper;
+namespace App\Mapper\User;
 
 use App\Entity\User;
 use App\DTO\Request\User\UserInputDTO;

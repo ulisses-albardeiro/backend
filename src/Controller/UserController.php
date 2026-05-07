@@ -38,7 +38,7 @@ final class UserController extends AbstractController
     }
 
     #[Route('api/register', name: 'app_register', methods: ['POST'])]
-    public function register(#[MapRequestPayload()] UserInputDTO $dto): JsonResponse
+    public function register(#[MapRequestPayload] UserInputDTO $dto): JsonResponse
     {    
         try {
             $user = $this->userService->create($dto);

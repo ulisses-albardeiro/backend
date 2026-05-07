@@ -4,10 +4,9 @@ namespace App\Service;
 
 use App\DTO\Request\User\UserInputDTO;
 use App\DTO\Response\User\UserOutputDTO;
-use App\Mapper\UserMapper;
+use App\Mapper\User\UserMapper;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserService
 {
