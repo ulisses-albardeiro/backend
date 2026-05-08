@@ -6,7 +6,7 @@ use App\Entity\Company;
 use App\Entity\Customer\Customer;
 use App\Mapper\Customer\CustomerMapper;
 use PHPUnit\Framework\TestCase;
-use App\Service\CustomerService;
+use App\Service\Customer\CustomerService;
 use App\DTO\Request\Customer\CustomerInputDTO;
 use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;

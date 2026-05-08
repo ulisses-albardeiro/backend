@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Customer;
 
 use App\Entity\Company;
 use App\Entity\Customer\Customer;
