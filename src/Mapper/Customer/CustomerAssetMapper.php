@@ -16,6 +16,7 @@ class CustomerAssetMapper
 
         $customerAsset->setCustomer($customer);
         $customerAsset->setName($dto->name);
+        $customerAsset->setCompany($company);
     
         return $customerAsset;
     }
@@ -27,6 +28,7 @@ class CustomerAssetMapper
             customerId: $customerAsset->getCustomer()->getId(),
             customerName: $customerAsset->getCustomer()->getName(),
             name: $customerAsset->getName(),
+            createdAt: $customerAsset->getCreatedAt()
         );
     }
 }

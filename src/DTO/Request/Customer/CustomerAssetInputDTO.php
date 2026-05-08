@@ -2,7 +2,6 @@
 
 namespace App\DTO\Request\Customer;
 
-use App\Enum\CustomerType;
 use Symfony\Component\Validator\Constraints as Assert;
 
 readonly class CustomerAssetInputDTO

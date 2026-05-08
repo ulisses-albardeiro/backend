@@ -5,7 +5,10 @@ namespace App\Entity\Customer;
 use App\Entity\Company;
 use App\Repository\Customer\CustomerAssetRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\PrePersist;
+use Doctrine\ORM\Mapping\PreUpdate;
 
+#[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: CustomerAssetRepository::class)]
 class CustomerAsset
 {
@@ -30,6 +33,18 @@ class CustomerAsset
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    #[PrePersist]
+    public function setCreatedAtValue(): void
+    {
+        $this->createdAt = new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
+    }
+
+    #[PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
+    }
 
     public function getId(): ?int
     {

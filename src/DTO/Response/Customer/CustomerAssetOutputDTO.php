@@ -2,6 +2,8 @@
 
 namespace App\DTO\Response\Customer;
 
+use DateTimeImmutable;
+
 readonly class CustomerAssetOutputDTO
 {
     public function __construct(
@@ -9,5 +11,6 @@ readonly class CustomerAssetOutputDTO
         public int $customerId,
         public string $customerName,
         public string $name,
+        public DateTimeImmutable $createdAt,
     ) {}
 }
