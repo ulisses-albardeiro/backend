@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DTO\Response;
+namespace App\DTO\Response\Customer;
 
 use DateTimeImmutable;
 
@@ -27,5 +27,6 @@ readonly class CustomerOutputDTO
         public ?string $notes,
         public DateTimeImmutable $createdAt,
         public ?DateTimeImmutable $updatedAt,
+        public array $assets,
     ) {}
 }

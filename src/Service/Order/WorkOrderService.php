@@ -13,7 +13,7 @@ use App\DTO\Request\TransactionInputDTO;
 use App\DTO\Response\Order\WorkOrderOutputDTO;
 use App\Entity\Category;
 use App\Mapper\CompanyMapper;
-use App\Mapper\CustomerMapper;
+use App\Mapper\Customer\CustomerMapper;
 use App\Repository\CategoryRepository;
 use App\Repository\Order\WorkOrderRepository;
 use App\Service\FileService;

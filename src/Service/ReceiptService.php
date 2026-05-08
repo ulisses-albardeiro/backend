@@ -5,7 +5,7 @@ namespace App\Service;
 use App\Entity\Company;
 use App\Mapper\ReceiptMapper;
 use App\Mapper\CompanyMapper;
-use App\Mapper\CustomerMapper;
+use App\Mapper\Customer\CustomerMapper;
 use App\Repository\QuoteRepository;
 use App\DTO\Request\ReceiptInputDTO;
 use App\Repository\ReceiptRepository;

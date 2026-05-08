@@ -7,7 +7,7 @@ use App\Entity\Company;
 use App\Mapper\Quote\QuoteMapper;
 use App\Service\FileService;
 use App\Mapper\CompanyMapper;
-use App\Mapper\CustomerMapper;
+use App\Mapper\Customer\CustomerMapper;
 use App\Service\QuoteService;
 use App\DTO\Request\Quote\QuoteInputDTO;
 use App\Repository\QuoteRepository;

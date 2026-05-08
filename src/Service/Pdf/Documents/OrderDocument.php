@@ -4,7 +4,7 @@ namespace App\Service\Pdf\Documents;
 
 use App\DTO\Response\Quote\QuoteOutputDTO;
 use App\DTO\Response\CompanyOutputDTO;
-use App\DTO\Response\CustomerOutputDTO;
+use App\DTO\Response\Customer\CustomerOutputDTO;
 use App\DTO\Response\Order\WorkOrderOutputDTO;
 use App\Service\Pdf\Interfaces\ExportableDocumentInterface;
 

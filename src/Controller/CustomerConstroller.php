@@ -3,9 +3,9 @@
 namespace App\Controller;
 
 use Psr\Log\LoggerInterface;
-use App\Mapper\CustomerMapper;
+use App\Mapper\Customer\CustomerMapper;
 use App\Service\CustomerService;
-use App\DTO\Request\CustomerInputDTO;
+use App\DTO\Request\Customer\CustomerInputDTO;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Http\Attribute\IsGranted;

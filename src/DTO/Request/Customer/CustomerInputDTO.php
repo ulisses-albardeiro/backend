@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DTO\Request;
+namespace App\DTO\Request\Customer;
 
 use App\Enum\CustomerType;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -56,5 +56,10 @@ readonly class CustomerInputDTO
         public bool $status = true,
 
         public ?string $notes = null,
+
+         /** @var CustomerAssetInput[] */
+        #[Assert\Valid]
+        #[Assert\Count(min: 1)]
+        public ?array $assetNames,
     ) {}
 }

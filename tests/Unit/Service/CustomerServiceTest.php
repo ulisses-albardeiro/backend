@@ -4,10 +4,10 @@ namespace App\Tests\Unit\Service;
 
 use App\Entity\Company;
 use App\Entity\Customer\Customer;
-use App\Mapper\CustomerMapper;
+use App\Mapper\Customer\CustomerMapper;
 use PHPUnit\Framework\TestCase;
 use App\Service\CustomerService;
-use App\DTO\Request\CustomerInputDTO;
+use App\DTO\Request\Customer\CustomerInputDTO;
 use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -47,7 +47,7 @@ class CustomerServiceTest extends TestCase
 
         $this->mapper->expects($this->exactly(2))
             ->method('toOutputDTO')
-            ->willReturn($this->createMock(\App\DTO\Response\CustomerOutputDTO::class));
+            ->willReturn($this->createMock(\App\DTO\Response\Customer\CustomerOutputDTO::class));
 
         $result = $this->service->listAllByCompany($company);
 

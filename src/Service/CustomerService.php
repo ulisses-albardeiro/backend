@@ -4,8 +4,8 @@ namespace App\Service;
 
 use App\Entity\Company;
 use App\Entity\Customer\Customer;
-use App\Mapper\CustomerMapper;
-use App\DTO\Request\CustomerInputDTO;
+use App\Mapper\Customer\CustomerMapper;
+use App\DTO\Request\Customer\CustomerInputDTO;
 use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;

@@ -1,14 +1,17 @@
 <?php
 
-namespace App\Mapper;
+namespace App\Mapper\Customer;
 
 use App\Entity\Company;
 use App\Entity\Customer\Customer;
-use App\DTO\Request\CustomerInputDTO;
-use App\DTO\Response\CustomerOutputDTO;
+use App\DTO\Request\Customer\CustomerInputDTO;
+use App\DTO\Response\Customer\CustomerOutputDTO;
 
 class CustomerMapper
 {
+    public function __construct(private CustomerAssetMapper $assetMapper)
+    {}
+    
     public function toEntity(CustomerInputDTO $dto, Company $company, ?Customer $customer = null): Customer
     {
         $customer ??= new Customer();
@@ -36,6 +39,11 @@ class CustomerMapper
 
     public function toOutputDTO(Customer $customer): CustomerOutputDTO
     {
+        $assets = [];
+        foreach ($customer->getCustomerAssets() as $asset) {
+            $assets[] = $this->assetMapper->toOutputDTO($asset);
+        }
+        
         return new CustomerOutputDTO(
             id: $customer->getId(),
             type: $customer->getType()->value,
@@ -57,6 +65,7 @@ class CustomerMapper
             notes: $customer->getNotes(),
             createdAt: $customer->getCreatedAt(),
             updatedAt: $customer->getUpdatedAt(),
+            assets: $assets,
         );
     }
 }
