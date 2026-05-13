@@ -7,6 +7,7 @@ use App\Entity\Company;
 use App\Mapper\Customer\CustomerAssetMapper;
 use App\DTO\Response\Customer\CustomerAssetOutputDTO;
 use App\Repository\Customer\CustomerAssetRepository;
+use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -16,6 +17,7 @@ class CustomerAssetService
         private CustomerAssetMapper $mapper,
         private EntityManagerInterface $em,
         private CustomerAssetRepository $repository,
+        private CustomerRepository $customerRepository,
     ) {}
 
     public function listAllByCompany(Company $company): array
@@ -41,7 +43,8 @@ class CustomerAssetService
 
     public function create(CustomerAssetInputDTO $dto, Company $company): CustomerAssetOutputDTO
     {
-        $customerAsset = $this->mapper->toEntity($dto, $company);
+        $customer = $this->customerRepository->findOneBy(['id' => $dto->customerId, 'company' => $company]);
+        $customerAsset = $this->mapper->toEntity($dto, $company, $customer);
         $this->em->persist($customerAsset);
         $this->em->flush();
 
@@ -51,8 +54,8 @@ class CustomerAssetService
     public function update(int $id, CustomerAssetInputDTO $dto, Company $company): CustomerAssetOutputDTO
     {
         $customerAsset = $this->repository->findOneBy(['id' => $id, 'company' => $company]);
-
-        $this->mapper->toEntity($dto, $company, $customerAsset);
+        $customer = $this->customerRepository->findOneBy(['id' => $dto->customerId, 'company' => $company]);
+        $this->mapper->toEntity($dto, $company, $customer);
 
         $this->em->flush();
 

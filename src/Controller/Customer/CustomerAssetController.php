@@ -4,7 +4,6 @@ namespace App\Controller\Customer;
 
 use App\DTO\Request\Customer\CustomerAssetInputDTO;
 use Psr\Log\LoggerInterface;
-use App\Mapper\Customer\CustomerAssetMapper;
 use App\Service\Customer\CustomerAssetService;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -15,10 +14,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 #[Route('/api/customer-asset', name: 'api_customer_asset_', format: 'json')]
-final class CustomerAssetConstroller extends AbstractController
+final class CustomerAssetController extends AbstractController
 {
     public function __construct(
-        private CustomerAssetMapper $mapper,
         private LoggerInterface $logger,
         private CustomerAssetService $service,
     ) {}

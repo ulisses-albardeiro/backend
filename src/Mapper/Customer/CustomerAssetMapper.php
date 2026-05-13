@@ -10,7 +10,7 @@ use App\Entity\Customer\CustomerAsset;
 
 class CustomerAssetMapper
 {
-    public function toEntity(CustomerAssetInputDTO $dto, Company $company, ?Customer $customer = null): CustomerAsset
+    public function toEntity(CustomerAssetInputDTO $dto, Company $company, ?Customer $customer): CustomerAsset
     {
         $customerAsset ??= new CustomerAsset();
 

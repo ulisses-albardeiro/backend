@@ -56,10 +56,5 @@ readonly class CustomerInputDTO
         public bool $status = true,
 
         public ?string $notes = null,
-
-         /** @var CustomerAssetInput[] */
-        #[Assert\Valid]
-        #[Assert\Count(min: 1)]
-        public ?array $assetNames,
     ) {}
 }

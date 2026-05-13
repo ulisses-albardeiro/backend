@@ -11,5 +11,8 @@ readonly class CustomerAssetInputDTO
         #[Assert\NotBlank]
         #[Assert\Length(max: 255)]
         public string $name,
+
+        #[Assert\NotBlank]
+        public int $customerId,
     ) {}
 }
