@@ -41,6 +41,19 @@ class CustomerAssetService
         return $this->mapper->toOutputDTO($customerAsset);
     }
 
+    public function getByCustomerIdAndCompany(int $customerId, Company $company): array
+    {
+        $customerAssets = $this->repository->findBy(['customer' => $customerId, 'company' => $company]);
+
+        if (!$customerAssets) {
+            throw new NotFoundHttpException('CUSTOMER_NOT_FOUND');
+        }
+
+        return array_map(function ($customerAsset) {
+            return $this->mapper->toOutputDTO($customerAsset);
+        }, $customerAssets);
+    }
+
     public function create(CustomerAssetInputDTO $dto, Company $company): CustomerAssetOutputDTO
     {
         $customer = $this->customerRepository->findOneBy(['id' => $dto->customerId, 'company' => $company]);
@@ -53,9 +66,17 @@ class CustomerAssetService
 
     public function update(int $id, CustomerAssetInputDTO $dto, Company $company): CustomerAssetOutputDTO
     {
-        $customerAsset = $this->repository->findOneBy(['id' => $id, 'company' => $company]);
-        $customer = $this->customerRepository->findOneBy(['id' => $dto->customerId, 'company' => $company]);
-        $this->mapper->toEntity($dto, $company, $customer);
+        $customerAsset = $this->repository->findOneBy([
+            'id' => $id,
+            'company' => $company
+        ]);
+
+        $customer = $this->customerRepository->findOneBy([
+            'id' => $dto->customerId,
+            'company' => $company
+        ]);
+
+        $this->mapper->toEntity($dto, $company, $customer, $customerAsset);
 
         $this->em->flush();
 

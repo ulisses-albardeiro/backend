@@ -43,6 +43,19 @@ final class CustomerAssetController extends AbstractController
         }
     }
 
+    #[Route('/customer/{customerId}', name: 'show_by_customer', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function showByCustomer(int $customerId): JsonResponse
+    {
+        try {
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
+            $customerAsset = $this->service->getByCustomerIdAndCompany($customerId, $user->getCompany());
+            return $this->json($customerAsset);
+        } catch (NotFoundHttpException $e) {
+            return $this->json(['message' => $e->getMessage()], 404);
+        }
+    }
+
     #[Route('', name: 'store', methods: ['POST'])]
     public function store(#[MapRequestPayload] CustomerAssetInputDTO $dto): JsonResponse
     {
