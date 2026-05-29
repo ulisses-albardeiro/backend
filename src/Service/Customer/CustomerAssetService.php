@@ -34,20 +34,12 @@ class CustomerAssetService
     {
         $customerAsset = $this->repository->findOneBy(['id' => $id, 'company' => $company]);
 
-        if (!$customerAsset) {
-            throw new NotFoundHttpException('CUSTOMER_NOT_FOUND');
-        }
-
         return $this->mapper->toOutputDTO($customerAsset);
     }
 
     public function getByCustomerIdAndCompany(int $customerId, Company $company): array
     {
         $customerAssets = $this->repository->findBy(['customer' => $customerId, 'company' => $company]);
-
-        if (!$customerAssets) {
-            throw new NotFoundHttpException('CUSTOMER_NOT_FOUND');
-        }
 
         return array_map(function ($customerAsset) {
             return $this->mapper->toOutputDTO($customerAsset);
