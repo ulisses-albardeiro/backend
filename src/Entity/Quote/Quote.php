@@ -4,6 +4,7 @@ namespace App\Entity\Quote;
 
 use App\Entity\Company;
 use App\Entity\Customer\Customer;
+use App\Entity\Customer\CustomerAsset;
 use App\Entity\Order\WorkOrder;
 use App\Entity\Quote\QuoteItem;
 use App\Entity\Receipt;
@@ -84,6 +85,9 @@ class Quote
      */
     #[ORM\OneToMany(targetEntity: WorkOrder::class, mappedBy: 'quote')]
     private Collection $workOrders;
+
+    #[ORM\ManyToOne(inversedBy: 'quotes')]
+    private ?CustomerAsset $asset = null;
 
     public function __construct()
     {
@@ -383,6 +387,18 @@ class Quote
                 $workOrder->setQuote(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getAsset(): ?CustomerAsset
+    {
+        return $this->asset;
+    }
+
+    public function setAsset(?CustomerAsset $asset): static
+    {
+        $this->asset = $asset;
 
         return $this;
     }

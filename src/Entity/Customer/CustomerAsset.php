@@ -3,7 +3,10 @@
 namespace App\Entity\Customer;
 
 use App\Entity\Company;
+use App\Entity\Quote\Quote;
 use App\Repository\Customer\CustomerAssetRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\PrePersist;
 use Doctrine\ORM\Mapping\PreUpdate;
@@ -33,6 +36,17 @@ class CustomerAsset
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    /**
+     * @var Collection<int, Quote>
+     */
+    #[ORM\OneToMany(targetEntity: Quote::class, mappedBy: 'asset')]
+    private Collection $quotes;
+
+    public function __construct()
+    {
+        $this->quotes = new ArrayCollection();
+    }
 
     #[PrePersist]
     public function setCreatedAtValue(): void
@@ -107,6 +121,36 @@ class CustomerAsset
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Quote>
+     */
+    public function getQuotes(): Collection
+    {
+        return $this->quotes;
+    }
+
+    public function addQuote(Quote $quote): static
+    {
+        if (!$this->quotes->contains($quote)) {
+            $this->quotes->add($quote);
+            $quote->setAsset($this);
+        }
+
+        return $this;
+    }
+
+    public function removeQuote(Quote $quote): static
+    {
+        if ($this->quotes->removeElement($quote)) {
+            // set the owning side to null (unless already changed)
+            if ($quote->getAsset() === $this) {
+                $quote->setAsset(null);
+            }
+        }
 
         return $this;
     }
