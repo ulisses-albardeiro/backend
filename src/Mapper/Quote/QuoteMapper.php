@@ -86,9 +86,10 @@ class QuoteMapper
                 quantity: $item->getQuantity(),
                 unitPrice: $item->getUnitPrice(),
                 totalPrice: $item->getTotalPrice(),
-                // Retorna apenas o ID para o DTO de saída
                 laborId: $item->getLabor()?->getId(),
-                productId: $item->getProduct()?->getId()
+                laborName: $item->getLabor()?->getName(),
+                productId: $item->getProduct()?->getId(),
+                productName: $item->getProduct()?->getName(),
             );
         }, $quote->getQuoteItems()->toArray());
 

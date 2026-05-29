@@ -11,6 +11,8 @@ readonly class QuoteItemOutputDTO
         public int $unitPrice,
         public int $totalPrice,
         public ?int $laborId,
+        public ?string $laborName,
         public ?int $productId,
+        public ?string $productName,
     ) {}
 }
