@@ -4,6 +4,7 @@ namespace App\Entity\Order;
 
 use App\Entity\Company;
 use App\Entity\Customer\Customer;
+use App\Entity\Customer\CustomerAsset;
 use App\Entity\Quote\Quote;
 use App\Entity\Transaction;
 use App\Enum\Order\WorkOrderStatus;
@@ -74,6 +75,9 @@ class WorkOrder
 
     #[ORM\Column]
     private ?int $totalAmount = null;
+
+    #[ORM\ManyToOne(inversedBy: 'workOrders')]
+    private ?CustomerAsset $asset = null;
 
     public function __construct()
     {
@@ -291,6 +295,18 @@ class WorkOrder
     public function setTotalAmount(int $totalAmount): static
     {
         $this->totalAmount = $totalAmount;
+
+        return $this;
+    }
+
+    public function getAsset(): ?CustomerAsset
+    {
+        return $this->asset;
+    }
+
+    public function setAsset(?CustomerAsset $asset): static
+    {
+        $this->asset = $asset;
 
         return $this;
     }

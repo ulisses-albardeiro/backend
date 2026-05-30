@@ -3,6 +3,7 @@
 namespace App\Entity\Customer;
 
 use App\Entity\Company;
+use App\Entity\Order\WorkOrder;
 use App\Entity\Quote\Quote;
 use App\Repository\Customer\CustomerAssetRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -43,9 +44,16 @@ class CustomerAsset
     #[ORM\OneToMany(targetEntity: Quote::class, mappedBy: 'asset')]
     private Collection $quotes;
 
+    /**
+     * @var Collection<int, WorkOrder>
+     */
+    #[ORM\OneToMany(targetEntity: WorkOrder::class, mappedBy: 'asset')]
+    private Collection $workOrders;
+
     public function __construct()
     {
         $this->quotes = new ArrayCollection();
+        $this->workOrders = new ArrayCollection();
     }
 
     #[PrePersist]
@@ -149,6 +157,36 @@ class CustomerAsset
             // set the owning side to null (unless already changed)
             if ($quote->getAsset() === $this) {
                 $quote->setAsset(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, WorkOrder>
+     */
+    public function getWorkOrders(): Collection
+    {
+        return $this->workOrders;
+    }
+
+    public function addWorkOrder(WorkOrder $workOrder): static
+    {
+        if (!$this->workOrders->contains($workOrder)) {
+            $this->workOrders->add($workOrder);
+            $workOrder->setAsset($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWorkOrder(WorkOrder $workOrder): static
+    {
+        if ($this->workOrders->removeElement($workOrder)) {
+            // set the owning side to null (unless already changed)
+            if ($workOrder->getAsset() === $this) {
+                $workOrder->setAsset(null);
             }
         }
 
