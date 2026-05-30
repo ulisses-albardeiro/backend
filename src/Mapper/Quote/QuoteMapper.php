@@ -90,6 +90,8 @@ class QuoteMapper
                 totalPrice: $item->getTotalPrice(),
                 laborId: $item->getLabor()?->getId(),
                 laborName: $item->getLabor()?->getName(),
+                laborUnit: $item->getLabor()?->getUnit()->value,
+                productUnit: $item->getProduct()?->getUnit()->value,
                 productId: $item->getProduct()?->getId(),
                 productName: $item->getProduct()?->getName(),
             );

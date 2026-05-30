@@ -12,7 +12,9 @@ readonly class QuoteItemOutputDTO
         public int $totalPrice,
         public ?int $laborId,
         public ?string $laborName,
+        public ?string $laborUnit,
         public ?int $productId,
         public ?string $productName,
+        public ?string $productUnit,
     ) {}
 }

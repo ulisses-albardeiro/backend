@@ -26,20 +26,30 @@
 				color: #666;
 			}
 			.table {
-				width: 100%;
-				border-collapse: collapse;
-				margin-bottom: 20px;
-			}
-			.table th {
-				background-color: #f8f8f8;
-				text-align: left;
-				padding: 8px;
-				border-bottom: 2px solid #ddd;
-			}
-			.table td {
-				padding: 8px;
-				border-bottom: 1px solid #eee;
-			}
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+                table-layout: auto;
+            }
+            .table th {
+                background-color: #f8f8f8;
+                padding: 8px;
+                border-bottom: 2px solid #ddd;
+                font-weight: bold;
+            }
+            .table td {
+                padding: 8px;
+                border-bottom: 1px solid #eee;
+                vertical-align: middle;
+            }
+            .col-desc { text-align: left; }
+            .col-qtd { text-align: right; width: 15%; white-space: nowrap; }
+            .col-unit { text-align: right; width: 20%; white-space: nowrap; }
+            .col-total { text-align: right; width: 20%; white-space: nowrap; }
+            
+            .text-right {
+                text-align: right;
+            }
 			.info-grid {
 				width: 100%;
 				margin-bottom: 30px;
@@ -188,27 +198,25 @@
         {% endif %}
 
 		<table class="table">
-			<thead>
-				<tr>
-					<th>Item / Descrição</th>
-					<th class="text-right" style="width: 60px;">Qtd</th>
-					<th class="text-right" style="width: 100px;">Unitário</th>
-					<th class="text-right" style="width: 100px;">Total</th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for item in quote.items %}
-					<tr>
-						<td>{{ item.description }}</td>
-						<td class="text-right">{{ item.quantity }}</td>
-						<td class="text-right">R$
-							{{ (item.unitPrice / 100)|number_format(2, ',', '.') }}</td>
-						<td class="text-right">R$
-							{{ (item.totalPrice / 100)|number_format(2, ',', '.') }}</td>
-					</tr>
-				{% endfor %}
-			</tbody>
-		</table>
+            <thead>
+                <tr>
+                    <th class="col-desc">Item / Descrição</th>
+                    <th class="col-qtd">Qtd</th>
+                    <th class="col-unit">Unitário</th>
+                    <th class="col-total">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in quote.items %}
+                    <tr>
+                        <td class="col-desc">{{ item.description }}</td>
+                        <td class="col-qtd">{{ item.quantity }} {{ item.laborUnit }}{{ item.productUnit }}</td>
+                        <td class="col-unit">R$ {{ (item.unitPrice / 100)|number_format(2, ',', '.') }}</td>
+                        <td class="col-total">R$ {{ (item.totalPrice / 100)|number_format(2, ',', '.') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
 		<div class="totals">
 			<div class="totals-row">
