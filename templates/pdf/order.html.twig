@@ -24,21 +24,35 @@
                 font-size: 10px;
                 color: #666;
             }
+            
+            /* ================================================================= */
+            /* ESTILOS DA TABELA REESTRUTURADOS PARA ALINHAMENTO PERFEITO EM PDF */
+            /* ================================================================= */
             .table {
                 width: 100%;
                 border-collapse: collapse;
                 margin-bottom: 20px;
+                table-layout: auto;
             }
             .table th {
                 background-color: #f8f8f8;
-                text-align: left;
                 padding: 8px;
                 border-bottom: 2px solid #ddd;
+                font-weight: bold;
             }
             .table td {
                 padding: 8px;
                 border-bottom: 1px solid #eee;
+                vertical-align: middle;
             }
+            
+            /* Classes de controle por peso em percentual (evita bugs de sub-pixels) */
+            .col-desc { text-align: left; }
+            .col-qtd { text-align: right; width: 15%; white-space: nowrap; }
+            .col-unit { text-align: right; width: 20%; white-space: nowrap; }
+            .col-total { text-align: right; width: 20%; white-space: nowrap; }
+            /* ================================================================= */
+
             .info-grid {
                 width: 100%;
                 margin-bottom: 20px;
@@ -53,17 +67,16 @@
                 font-size: 10px;
                 color: #666;
                 font-weight: bold;
-                margin-bottom: 5px;
+                margin-bottom: -10px;
                 text-transform: uppercase;
                 border-bottom: 1px solid #eee;
-                padding-bottom: 2px;
+                padding-bottom: 20px; /* Corrigido padding para evitar quebras visuais */
                 margin-top: 15px;
             }
             .content-block {
                 background: #fdfdfd;
                 padding: 8px;
                 border: 1px solid #f0f0f0;
-                margin-bottom: 10px;
             }
             .totals {
                 float: right;
@@ -133,7 +146,6 @@
                     <td class="text-right" style="vertical-align: top;">
                         <h1 style="margin: 0; color: #444; font-size: 20px;">ORDEM DE SERVIÇO</h1>
                         <div style="margin: 10px 0;">
-                            {# Nota: Como seu DTO não tem statusColor, usei uma cor padrão ou lógica simples #}
                             <span class="status-badge" style="background-color: #666;">
                                 {{ order.statusLabel }}
                             </span>
@@ -165,6 +177,13 @@
             </tr>
         </table>
 
+        {% if order.assetName %}
+            <div class="section-title">Bem Associado</div>
+            <div class="content-block">
+                {{ order.assetName }}
+            </div>
+        {% endif %}
+        
         <div class="section-title">Descrição do Problema</div>
         <div class="content-block">
             {{ order.problemDescription|nl2br }}
@@ -178,25 +197,23 @@
         {% endif %}
 
         <div class="section-title">Peças e Serviços</div>
+        
         <table class="table">
             <thead>
                 <tr>
-                    <th>Descrição</th>
-                    <th class="text-right" style="width: 60px;">Qtd</th>
-                    <th class="text-right" style="width: 100px;">Unitário</th>
-                    <th class="text-right" style="width: 100px;">Total</th>
+                    <th class="col-desc">Descrição</th>
+                    <th class="col-qtd">Qtd</th>
+                    <th class="col-unit">Unitário</th>
+                    <th class="col-total">Total</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in order.items %}
                     <tr>
-                        <td>
-                            {# Mostra nome do produto ou serviço se disponível, senão a descrição #}
-                            {{ item.productName ?: item.laborName ?: item.description }}
-                        </td>
-                        <td class="text-right">{{ item.quantity }}</td>
-                        <td class="text-right">R$ {{ (item.unitPrice / 100)|number_format(2, ',', '.') }}</td>
-                        <td class="text-right">R$ {{ (item.totalPrice / 100)|number_format(2, ',', '.') }}</td>
+                        <td class="col-desc">{{ item.productName ?: item.laborName ?: item.description }}</td>
+                        <td class="col-qtd">{{ item.quantity }} {{ item.productUnit }}{{ item.laborUnit }}</td>
+                        <td class="col-unit">R$ {{ (item.unitPrice / 100)|number_format(2, ',', '.') }}</td>
+                        <td class="col-total">R$ {{ (item.totalPrice / 100)|number_format(2, ',', '.') }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

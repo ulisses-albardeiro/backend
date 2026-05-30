@@ -12,7 +12,9 @@ readonly class WorkOrderItemOutputDTO
         public int $totalPrice,
         public ?int $productId,
         public ?string $productName,
+        public ?string $productUnit,
         public ?int $laborId,
         public ?string $laborName,
+        public ?string $laborUnit,
     ) {}
 }

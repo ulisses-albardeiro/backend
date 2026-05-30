@@ -106,8 +106,10 @@ class WorkOrderMapper
                 totalPrice: $item->getTotalPrice(),
                 productId: $item->getProduct()?->getId(),
                 productName: $item->getProduct()?->getName(),
+                productUnit: $item->getProduct()?->getUnit()->value,
                 laborId: $item->getLabor()?->getId(),
                 laborName: $item->getLabor()?->getName(),
+                laborUnit: $item->getLabor()?->getUnit()->value
             );
         }, $workOrder->getWorkOrderItems()->toArray());
 
