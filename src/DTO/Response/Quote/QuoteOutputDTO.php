@@ -28,6 +28,8 @@ readonly class QuoteOutputDTO
         public ?string $description,
         public ?string $notes,
         public ?string $internalNotes,
+        public ?int $assetId,
+        public ?string $assetName,
         public array $items,
     ) {}
 }

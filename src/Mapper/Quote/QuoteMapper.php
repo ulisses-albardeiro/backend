@@ -11,6 +11,7 @@ use App\Enum\DiscountType;
 use App\DTO\Request\Quote\QuoteInputDTO;
 use App\DTO\Response\Quote\QuoteOutputDTO;
 use App\DTO\Response\Quote\QuoteItemOutputDTO;
+use App\Entity\Customer\CustomerAsset;
 use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -21,7 +22,7 @@ class QuoteMapper
         private EntityManagerInterface $em
     ) {}
 
-    public function toEntity(QuoteInputDTO $dto, Company $company, ?Quote $quote = null): Quote
+    public function toEntity(QuoteInputDTO $dto, Company $company, ?CustomerAsset $asset, ?Quote $quote = null): Quote
     {
         $quote = $quote ?? new Quote();
 
@@ -32,6 +33,7 @@ class QuoteMapper
         
         $quote->setCompany($company);
         $quote->setCustomer($customer);
+        $quote->setAsset($asset);
         $quote->setDate($dto->date);
         $quote->setDueDate($dto->dueDate);
         $quote->setDescription($dto->description);
@@ -112,6 +114,8 @@ class QuoteMapper
             description: $quote->getDescription(),
             notes: $quote->getNotes(),
             internalNotes: $quote->getInternalNotes(),
+            assetId: $quote->getAsset()?->getId(),
+            assetName: $quote->getAsset()?->getName(),
             items: $items
         );
     }

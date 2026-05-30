@@ -9,6 +9,7 @@ use App\Mapper\Customer\CustomerMapper;
 use App\DTO\Request\Quote\QuoteInputDTO;
 use App\Repository\QuoteRepository;
 use App\DTO\Response\Quote\QuoteOutputDTO;
+use App\Repository\Customer\CustomerAssetRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\Pdf\Documents\QuoteDocument;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -22,6 +23,7 @@ class QuoteService
         private QuoteRepository $repository,
         private CompanyMapper $companyMapper,
         private CustomerMapper $customerMapper,
+        private CustomerAssetRepository $assetRepository,
     ) {}
 
     public function listAllByCompany(Company $company): array
@@ -47,7 +49,11 @@ class QuoteService
 
     public function create(QuoteInputDTO $dto, Company $company): QuoteOutputDTO
     {
-        $quote = $this->mapper->toEntity($dto, $company);
+        $asset = $this->assetRepository->findOneBy([
+            'id' => $dto->assetId,
+            'company' => $company
+        ]);
+        $quote = $this->mapper->toEntity($dto, $company, $asset);
 
         $quote->recalculateTotals();
 
@@ -61,11 +67,12 @@ class QuoteService
     {
         $quote = $this->repository->findByIdAndCompany($id, $company);
 
-        if (!$quote) {
-            throw new NotFoundHttpException('QUOTE_NOT_FOUND');
-        }
+        $asset = $this->assetRepository->findOneBy([
+            'id' => $dto->assetId,
+            'company' => $company
+        ]);
 
-        $this->mapper->toEntity($dto, $company, $quote);
+        $this->mapper->toEntity($dto, $company, $asset, $quote);
 
         $quote->recalculateTotals();
 
