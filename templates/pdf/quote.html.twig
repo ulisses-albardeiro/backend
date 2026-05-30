@@ -174,12 +174,18 @@
 			</tr>
 		</table>
 
-		{% if quote.description %}
-			<div style="margin-bottom: 20px;">
-				<strong style="font-size: 10px; color: #666;">DESCRIÇÃO / OBJETIVO:</strong><br>
-				{{ quote.description|nl2br }}
-			</div>
-		{% endif %}
+		{% if quote.assetName %}
+            <div style="margin-bottom: 20px;">
+                <strong style="font-size: 10px; color: #666;">BEM ASSOCIADO:</strong><br>
+                {{ quote.assetName }}
+            </div>
+        {% endif %}
+        {% if quote.description %}
+            <div style="margin-bottom: 20px;">
+                <strong style="font-size: 10px; color: #666;">DESCRIÇÃO / OBJETIVO:</strong><br>
+                {{ quote.description|nl2br }}
+            </div>
+        {% endif %}
 
 		<table class="table">
 			<thead>
