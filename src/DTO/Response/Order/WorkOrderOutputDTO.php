@@ -22,6 +22,8 @@ readonly class WorkOrderOutputDTO
         public string $problemDescription,
         public ?string $technicalReport,
         public ?string $equipment,
+        public ?int $assetId,
+        public ?string $assetName,
         public ?DateTimeImmutable $startDate,
         public ?DateTimeImmutable $endDate,
         public DateTimeImmutable $createdAt,

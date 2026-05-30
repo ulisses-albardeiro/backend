@@ -15,6 +15,7 @@ use App\Entity\Category;
 use App\Mapper\CompanyMapper;
 use App\Mapper\Customer\CustomerMapper;
 use App\Repository\CategoryRepository;
+use App\Repository\Customer\CustomerAssetRepository;
 use App\Repository\Order\WorkOrderRepository;
 use App\Service\FileService;
 use App\Service\Pdf\Documents\OrderDocument;
@@ -32,11 +33,17 @@ class WorkOrderService
         private CompanyMapper $companyMapper,
         private CustomerMapper $customerMapper,
         private FileService $fileService,
+        private CustomerAssetRepository $customerAssetRepository
     ) {}
 
     public function create(WorkOrderInputDTO $dto, Company $company): WorkOrderOutputDTO
     {
-        $workOrder = $this->mapper->toEntity($dto, $company);
+        $customerAsset = $this->customerAssetRepository->findOneBy([
+            'id' => $dto->assetId,
+            'company' => $company
+        ]);
+
+        $workOrder = $this->mapper->toEntity($dto, $company, $customerAsset);
 
         $transaction = $this->createAutomaticTransaction($workOrder, $company);
 
@@ -52,11 +59,12 @@ class WorkOrderService
     {
         $workOrder = $this->repository->findOneBy(['id' => $id, 'company' => $company]);
 
-        if (!$workOrder) {
-            throw new NotFoundHttpException('WORK_ORDER_NOT_FOUND');
-        }
+        $customerAsset = $this->customerAssetRepository->findOneBy([
+            'id' => $dto->assetId,
+            'company' => $company
+        ]);
 
-        $this->mapper->toEntity($dto, $company, $workOrder);
+        $this->mapper->toEntity($dto, $company, $workOrder, $customerAsset);
 
         $transaction = $workOrder->getTransaction();
         $transaction->setAmount($workOrder->getTotalAmount());
@@ -67,12 +75,8 @@ class WorkOrderService
         return $this->mapper->toOutputDTO($workOrder);
     }
 
-    /**
-     * Lógica para criar a transação financeira automática
-     */
     private function createAutomaticTransaction(WorkOrder $workOrder, Company $company)
     {
-        // 1. Tenta buscar a categoria "Serviços"
         $category = $this->categoryRepo->findOneBy([
             'company' => $company,
             'name' => 'Serviços'

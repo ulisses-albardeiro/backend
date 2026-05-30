@@ -11,6 +11,7 @@ use App\Entity\Quote\Quote;
 use App\DTO\Request\Order\WorkOrderInputDTO;
 use App\DTO\Response\Order\WorkOrderOutputDTO;
 use App\DTO\Response\Order\WorkOrderItemOutputDTO;
+use App\Entity\Customer\CustomerAsset;
 use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -21,7 +22,7 @@ class WorkOrderMapper
         private EntityManagerInterface $em
     ) {}
 
-    public function toEntity(WorkOrderInputDTO $dto, Company $company, ?WorkOrder $workOrder = null): WorkOrder
+    public function toEntity(WorkOrderInputDTO $dto, Company $company, ?CustomerAsset $customerAsset, ?WorkOrder $workOrder = null): WorkOrder
     {
         $workOrder = $workOrder ?? new WorkOrder();
 
@@ -32,6 +33,8 @@ class WorkOrderMapper
 
         $workOrder->setCompany($company);
         $workOrder->setCustomer($customer);
+
+        $workOrder->setAsset($customerAsset);
         
         $workOrder->setTitle($dto->title);
         $workOrder->setStatus($dto->status);
@@ -121,6 +124,8 @@ class WorkOrderMapper
             problemDescription: $workOrder->getProblemDescription(),
             technicalReport: $workOrder->getTechnicalReport(),
             equipment: $workOrder->getEquipment(),
+            assetId: $workOrder->getAsset()?->getId(),
+            assetName: $workOrder->getAsset()?->getName(),
             startDate: $workOrder->getStartDate(),
             endDate: $workOrder->getEndDate(),
             createdAt: $workOrder->getCreatedAt(),
