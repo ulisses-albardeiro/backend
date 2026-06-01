@@ -4,7 +4,6 @@ namespace App\Controller\Admin;
 
 use App\Service\UserService;
 use Psr\Log\LoggerInterface;
-use App\Service\CompanyService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,9 +18,26 @@ final class UserAdminController extends AbstractController
         private LoggerInterface $logger,
     ) {}
 
+    #[Route('/me', name: 'index_me')]
+    #[IsGranted('ROLE_SUPER_ADMIN')]
+    public function indexMe(): JsonResponse
+    {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        $data = [
+            'id'    => $user->getId(),
+            'email' => $user->getUserIdentifier(),
+            'name'  => $user->getName(),
+            'roles' => $user->getRoles(),
+        ];
+
+        return $this->json($data);
+    }
+
     #[Route('/users', name: 'index')]
     #[IsGranted('ROLE_SUPER_ADMIN')]
-    public function index(CompanyService $companyService): JsonResponse
+    public function index(): JsonResponse
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();

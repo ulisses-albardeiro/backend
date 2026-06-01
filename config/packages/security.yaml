@@ -12,8 +12,16 @@ security:
                 property: email
 
     firewalls:
-        login:
-            pattern: ^/api/login
+        admin_login:
+            pattern: ^/api/admin/login_check
+            stateless: true
+            json_login:
+                check_path: /api/admin/login_check
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+        user_login:
+            pattern: ^/api/login_check
             stateless: true
             json_login:
                 check_path: /api/login_check
@@ -40,12 +48,14 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        - { path: ^/api/auth/google, roles: PUBLIC_ACCESS }
-        - { path: ^/api/login_check, roles: PUBLIC_ACCESS }
+        - { path: ^/api/(admin/)?login_check, roles: PUBLIC_ACCESS }
+        
         - { path: ^/api/password-reset/request, roles: PUBLIC_ACCESS }
         - { path: ^/api/password-reset/validate, roles: PUBLIC_ACCESS }
         - { path: ^/api/password-reset/reset, roles: PUBLIC_ACCESS }
         - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        
+        - { path: ^/api/admin, roles: ROLE_SUPER_ADMIN }
         - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
