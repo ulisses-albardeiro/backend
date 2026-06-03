@@ -16,7 +16,7 @@ readonly class UserInputDTO
         #[Assert\Length(max: 180)]
         public string $email,       
 
-        #[Assert\Length(min: 8, max: 255)]
+        #[Assert\Length(min: 6, max: 255)]
         public ?string $password = null,
 
         #[Assert\Length(min: 10, max: 11)]
