@@ -34,4 +34,24 @@ class UserService
 
         return $this->userMapper->toOutputDTO($user);
     }
+
+    /**
+     * * @return UserOutputDTO[]
+     */
+    public function getAll(): array
+    {
+        $users = $this->userRepository->findAll();
+
+        return array_map(
+            fn($user) => $this->userMapper->toOutputDTO($user),
+            $users
+        );
+    }
+
+    public function getById(int $userId): UserOutputDTO
+    {
+        $user = $this->userRepository->findOneBy(['id' => $userId]);
+
+        return $this->userMapper->toOutputDTO($user);
+    }
 }

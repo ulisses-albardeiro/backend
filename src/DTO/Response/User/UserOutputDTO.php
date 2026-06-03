@@ -14,7 +14,7 @@ readonly class UserOutputDTO
         public ?string $googleId,
         public ?int $companyId,
         public ?string $companyName,
-        public string $createdAt,
+        public ?string $createdAt,
         public ?string $updatedAt
     ) {}
 }

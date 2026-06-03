@@ -16,6 +16,7 @@ final class UserAdminController extends AbstractController
 {
     public function __construct(
         private LoggerInterface $logger,
+        private UserService $userService,
     ) {}
 
     #[Route('/me', name: 'index_me')]
@@ -42,7 +43,17 @@ final class UserAdminController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        return $this->json([]);
+        return $this->json($this->userService->getAll());
+    }
+
+    #[Route('/user/{id}', name: 'show')]
+    #[IsGranted('ROLE_SUPER_ADMIN')]
+    public function show(int $id): JsonResponse
+    {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        return $this->json($this->userService->getById($id));
     }
 
     #[Route('/register', name: 'register', methods: ['POST'])]
