@@ -29,13 +29,13 @@ class Company
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $name = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $tradingName = null;
 
     #[ORM\Column(length: 15, nullable: true)]
     private ?string $registrationNumber = null;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 50, nullable: true)]
     private ?string $stateRegistration = null;
 
     #[ORM\Column(length: 50, nullable: true)]
@@ -65,10 +65,10 @@ class Company
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $neighborhood = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $city = null;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 50, nullable: true)]
     private ?string $state = null;
 
     #[ORM\OneToOne(inversedBy: 'company', cascade: ['persist', 'remove'])]
@@ -217,7 +217,7 @@ class Company
         return $this->tradingName;
     }
 
-    public function setTradingName(string $tradingName): static
+    public function setTradingName(?string $tradingName): static
     {
         $this->tradingName = $tradingName;
 
@@ -241,7 +241,7 @@ class Company
         return $this->stateRegistration;
     }
 
-    public function setStateRegistration(string $stateRegistration): static
+    public function setStateRegistration(?string $stateRegistration): static
     {
         $this->stateRegistration = $stateRegistration;
 
@@ -361,7 +361,7 @@ class Company
         return $this->city;
     }
 
-    public function setCity(string $city): static
+    public function setCity(?string $city): static
     {
         $this->city = $city;
 
@@ -373,7 +373,7 @@ class Company
         return $this->state;
     }
 
-    public function setState(string $state): static
+    public function setState(?string $state): static
     {
         $this->state = $state;
 
