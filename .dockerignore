@@ -1,0 +1,11 @@
+.git
+.gitignore
+.env.local
+.env.*.local
+docker-compose.override.yml
+var/cache
+var/log
+var/sessions
+tests
+README.md
+*.md
