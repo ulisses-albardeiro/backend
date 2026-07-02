@@ -64,6 +64,8 @@ final class AuthController extends AbstractController
                 $this->em->persist($user);
                 $this->em->flush();
 
+                $companyService->createDraftForUser($user, $name, $email, null);
+
                 $this->logger->info('New user registered via Google OAuth.', ['email' => $email]);
             }
 

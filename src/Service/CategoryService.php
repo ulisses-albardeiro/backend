@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\Company;
 use App\Entity\Category;
+use App\Enum\TransactionType;
 use App\Mapper\CategoryMapper;
 use App\DTO\Request\CategoryInputDTO;
 use App\Repository\CategoryRepository;
@@ -86,5 +87,32 @@ class CategoryService
 
         $this->em->remove($category);
         $this->em->flush();
+    }
+
+    public function createDefaultCategories(Company $company): void
+    {
+        $defaults = [
+            ['name' => 'Serviços Prestados', 'type' => TransactionType::INCOME, 'color' => '#10b981', 'icon' => 'briefcase'],
+            ['name' => 'Venda de Produtos', 'type' => TransactionType::INCOME, 'color' => '#3b82f6', 'icon' => 'shopping-bag'],
+            ['name' => 'Outras Receitas', 'type' => TransactionType::INCOME, 'color' => '#06b6d4', 'icon' => 'plus-circle'],
+            ['name' => 'Fornecedores e Materiais', 'type' => TransactionType::EXPENSE, 'color' => '#f59e0b', 'icon' => 'package'],
+            ['name' => 'Salários e Pró-labore', 'type' => TransactionType::EXPENSE, 'color' => '#8b5cf6', 'icon' => 'users'],
+            ['name' => 'Impostos e Taxas', 'type' => TransactionType::EXPENSE, 'color' => '#ef4444', 'icon' => 'file-text'],
+            ['name' => 'Aluguel e Contas Fixas', 'type' => TransactionType::EXPENSE, 'color' => '#f97316', 'icon' => 'home'],
+            ['name' => 'Marketing e Publicidade', 'type' => TransactionType::EXPENSE, 'color' => '#ec4899', 'icon' => 'megaphone'],
+            ['name' => 'Despesas Administrativas', 'type' => TransactionType::EXPENSE, 'color' => '#64748b', 'icon' => 'briefcase'],
+        ];
+
+        foreach ($defaults as $config) {
+            $this->create(
+                new CategoryInputDTO(
+                    name: $config['name'],
+                    type: $config['type'],
+                    color: $config['color'],
+                    icon: $config['icon'],
+                ),
+                $company
+            );
+        }
     }
 }

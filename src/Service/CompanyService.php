@@ -20,7 +20,25 @@ class CompanyService
         private EntityManagerInterface $entityManager,
         private LaborCategoryService $laborCategoryService,
         private LaborService $laborService,
+        private CategoryService $categoryService,
     ) {}
+
+    public function createDraftForUser(User $user, string $name, string $email, ?string $phone): Company
+    {
+        $company = new Company();
+        $company->setName($name);
+        $company->setEmail($email);
+        $company->setPhone($phone);
+
+        $user->setCompany($company);
+
+        $this->entityManager->persist($company);
+        $this->entityManager->flush();
+
+        $this->setupNewAccount($company);
+
+        return $company;
+    }
 
     public function handleUpsert(User $user, CompanyInputDTO $inputDto, ?UploadedFile $logoFile): CompanyOutputDTO
     {
@@ -92,5 +110,6 @@ class CompanyService
     {
         $this->laborCategoryService->createDefaultCategories($company);
         $this->laborService->createDefaultLabors($company);
+        $this->categoryService->createDefaultCategories($company);
     }
 }

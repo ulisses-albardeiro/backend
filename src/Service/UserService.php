@@ -14,6 +14,7 @@ class UserService
         private UserRepository $userRepository,
         private EntityManagerInterface $entityManager,
         private UserMapper $userMapper,
+        private CompanyService $companyService,
     ) {}
 
     public function create(UserInputDTO $dto): UserOutputDTO
@@ -31,6 +32,8 @@ class UserService
         $user = $this->userMapper->toEntity($dto);
         $this->entityManager->persist($user);
         $this->entityManager->flush();
+
+        $this->companyService->createDraftForUser($user, $dto->name, $dto->email, $dto->phone);
 
         return $this->userMapper->toOutputDTO($user);
     }

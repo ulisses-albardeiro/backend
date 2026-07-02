@@ -5,18 +5,22 @@ namespace App\Controller;
 use App\DTO\Request\User\UserInputDTO;
 use App\Service\UserService;
 use Psr\Log\LoggerInterface;
+use App\Repository\UserRepository;
 use App\Service\CompanyService;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 final class UserController extends AbstractController
 {
     public function __construct(
         private LoggerInterface $logger,
         private UserService $userService,
+        private UserRepository $userRepository,
+        private JWTTokenManagerInterface $jwtManager,
     ) {}
 
     #[Route('api/me', name: 'app_me')]
@@ -39,10 +43,17 @@ final class UserController extends AbstractController
 
     #[Route('api/register', name: 'app_register', methods: ['POST'])]
     public function register(#[MapRequestPayload] UserInputDTO $dto): JsonResponse
-    {    
+    {
         try {
-            $user = $this->userService->create($dto);
-            return $this->json(['message' => 'USER_CREATED_SUCCESS'], 201);
+            $userOutput = $this->userService->create($dto);
+            $user = $this->userRepository->find($userOutput->id);
+            $token = $this->jwtManager->create($user);
+
+            return $this->json([
+                'message' => 'USER_CREATED_SUCCESS',
+                'token' => $token,
+                'user' => $userOutput,
+            ], 201);
         } catch (\InvalidArgumentException $e) {
             return $this->json([
                 'error' => $e->getMessage()

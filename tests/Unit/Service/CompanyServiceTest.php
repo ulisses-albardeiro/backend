@@ -5,10 +5,13 @@ use App\Entity\User;
 use App\Entity\Company;
 use App\Service\FileService;
 use App\Mapper\CompanyMapper;
+use App\Service\CategoryService;
 use App\Service\CompanyService;
+use App\Service\Labor\LaborService;
 use PHPUnit\Framework\TestCase;
 use App\DTO\Request\CompanyInputDTO;
 use App\DTO\Response\CompanyOutputDTO;
+use App\Service\Labor\LaborCategoryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -19,6 +22,9 @@ class CompanyServiceTest extends TestCase
     private $mapper;
     private $fileService;
     private $entityManager;
+    private $laborCategoryService;
+    private $laborService;
+    private $categoryService;
     private $service;
 
     protected function setUp(): void
@@ -26,12 +32,45 @@ class CompanyServiceTest extends TestCase
         $this->mapper = $this->createMock(CompanyMapper::class);
         $this->fileService = $this->createMock(FileService::class);
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $this->laborCategoryService = $this->createMock(LaborCategoryService::class);
+        $this->laborService = $this->createMock(LaborService::class);
+        $this->categoryService = $this->createMock(CategoryService::class);
 
         $this->service = new CompanyService(
-            $this->mapper, 
-            $this->fileService, 
-            $this->entityManager
+            $this->mapper,
+            $this->fileService,
+            $this->entityManager,
+            $this->laborCategoryService,
+            $this->laborService,
+            $this->categoryService,
         );
+    }
+
+    public function testCreateDraftForUserCreatesMinimalCompanyAndSetsUpDefaults(): void
+    {
+        $user = new User();
+
+        $this->laborCategoryService->expects($this->once())
+            ->method('createDefaultCategories')
+            ->with($this->isInstanceOf(Company::class));
+
+        $this->laborService->expects($this->once())
+            ->method('createDefaultLabors')
+            ->with($this->isInstanceOf(Company::class));
+
+        $this->categoryService->expects($this->once())
+            ->method('createDefaultCategories')
+            ->with($this->isInstanceOf(Company::class));
+
+        $this->entityManager->expects($this->once())->method('persist')->with($this->isInstanceOf(Company::class));
+        $this->entityManager->expects($this->once())->method('flush');
+
+        $company = $this->service->createDraftForUser($user, 'Fulano de Tal', 'fulano@example.com', '11999999999');
+
+        $this->assertSame('Fulano de Tal', $company->getName());
+        $this->assertSame('fulano@example.com', $company->getEmail());
+        $this->assertSame('11999999999', $company->getPhone());
+        $this->assertSame($company, $user->getCompany());
     }
 
     public function testHandleUpsertCreatesNewCompanyWhenUserHasNone(): void
