@@ -32,7 +32,7 @@ RUN composer install --no-scripts --no-autoloader --prefer-dist
 COPY . .
 RUN composer dump-autoload --optimize
 
-RUN chown -R www-data:www-data var
+RUN mkdir -p var && chown -R www-data:www-data var
 
 EXPOSE 8000
 
