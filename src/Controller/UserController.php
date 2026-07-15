@@ -7,6 +7,7 @@ use App\Service\UserService;
 use Psr\Log\LoggerInterface;
 use App\Repository\UserRepository;
 use App\Service\CompanyService;
+use App\Service\Subscription\SubscriptionService;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -25,7 +26,7 @@ final class UserController extends AbstractController
 
     #[Route('api/me', name: 'app_me')]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function index(CompanyService $companyService): JsonResponse
+    public function index(CompanyService $companyService, SubscriptionService $subscriptionService): JsonResponse
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
@@ -36,6 +37,7 @@ final class UserController extends AbstractController
             'name'  => $user->getName(),
             'roles' => $user->getRoles(),
             'company' => $companyService->getCompanyByUser($user) ?? null,
+            'subscription' => $user->getCompany() ? $subscriptionService->getByCompany($user->getCompany()) : null,
         ];
 
         return $this->json($data);

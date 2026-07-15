@@ -9,6 +9,9 @@ services:
     volumes:
       - .:/var/www/html
       - /var/www/html/vendor
+    env_file:
+      - path: .env.local
+        required: false
     environment:
       APP_ENV: dev
       APP_SECRET: ${APP_SECRET:-change_me_in_env_local}
@@ -19,6 +22,7 @@ services:
       MAILER_DSN: ${MAILER_DSN:-null://null}
       MAILER_FROM: ${MAILER_FROM:-suporte@example.com}
       CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN:-'^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'}
+      ASAAS_API_URL: ${ASAAS_API_URL:-https://api-sandbox.asaas.com/v3}
     depends_on:
       mysql:
         condition: service_healthy

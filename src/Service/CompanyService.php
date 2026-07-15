@@ -9,6 +9,7 @@ use App\DTO\Request\CompanyInputDTO;
 use App\DTO\Response\CompanyOutputDTO;
 use App\Service\Labor\LaborCategoryService;
 use App\Service\Labor\LaborService;
+use App\Service\Subscription\SubscriptionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -21,6 +22,7 @@ class CompanyService
         private LaborCategoryService $laborCategoryService,
         private LaborService $laborService,
         private CategoryService $categoryService,
+        private SubscriptionService $subscriptionService,
     ) {}
 
     public function createDraftForUser(User $user, string $name, string $email, ?string $phone): Company
@@ -111,5 +113,6 @@ class CompanyService
         $this->laborCategoryService->createDefaultCategories($company);
         $this->laborService->createDefaultLabors($company);
         $this->categoryService->createDefaultCategories($company);
+        $this->subscriptionService->startTrial($company);
     }
 }

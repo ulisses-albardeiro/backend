@@ -10,6 +10,9 @@ parameters:
     google_client_id: '%env(GOOGLE_CLIENT_ID)%'
     mailer_from: '%env(MAILER_FROM)%'
     uploads_directory: '%kernel.project_dir%/public/uploads'
+    asaas_api_url: '%env(ASAAS_API_URL)%'
+    asaas_api_key: '%env(ASAAS_API_KEY)%'
+    asaas_webhook_token: '%env(ASAAS_WEBHOOK_TOKEN)%'
 
 services:
     # default configuration for services in *this* file
@@ -31,6 +34,15 @@ services:
     App\Service\FileService:
         arguments:
             $targetDirectory: '%uploads_directory%'
+
+    App\Service\Gateway\AsaasClient:
+        arguments:
+            $apiUrl: '%asaas_api_url%'
+            $apiKey: '%asaas_api_key%'
+
+    App\Controller\Webhook\AsaasWebhookController:
+        arguments:
+            $asaasWebhookToken: '%asaas_webhook_token%'
 
     App\Serializer\EmptyStringToNullDenormalizer:
         tags:
