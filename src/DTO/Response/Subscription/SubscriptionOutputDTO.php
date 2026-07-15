@@ -11,6 +11,7 @@ readonly class SubscriptionOutputDTO
         public string $status,
         public string $statusLabel,
         public bool $blocked,
+        public bool $canChangePlan,
         public string $billingType,
         public string $billingTypeLabel,
         public ?PlanOutputDTO $plan,

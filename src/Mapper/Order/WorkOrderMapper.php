@@ -45,7 +45,7 @@ class WorkOrderMapper
         $workOrder->setEndDate($dto->endDate);
         
         if (!$workOrder->getId()) {
-            $year = date('dmY');
+            $year = (new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')))->format('dmY');
             $uniquePart = strtoupper(substr(uniqid(), -4));
             $code = sprintf('OS-%s-%s', $year, $uniquePart);
             $workOrder->setCode($code);

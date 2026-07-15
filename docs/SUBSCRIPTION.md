@@ -23,7 +23,7 @@ Três entidades novas, todas em `src/Entity/Subscription/`:
 - **`Subscription`** — 1:1 com `Company` (dono da relação, igual ao padrão `Company`↔`User`). Campos: `plan` (nullable — null até o usuário escolher), `status` (enum `SubscriptionStatus`), `billingType` (enum `SubscriptionBillingType`), `asaasCustomerId`, `asaasSubscriptionId`, `creditCardToken`/`cardLastFour`/`cardBrand`, `trialEndsAt`, `currentPeriodEnd`, `canceledAt`, **`documentNumber`** (CPF ou CNPJ efetivamente usado no Asaas — ver seção CPF/CNPJ).
 - **`Invoice`** — espelho local das cobranças do Asaas (uma por pagamento gerado), alimentado por webhook. `asaasPaymentId` é **unique** (idempotência). Guardar isso localmente é proposital: o bloqueio de acesso roda em toda request e não pode depender de chamada síncrona ao Asaas.
 
-Enums em `src/Enum/Subscription/`: `PlanBillingCycle`, `SubscriptionStatus` (`TRIALING|ACTIVE|PAST_DUE|EXPIRED|CANCELED|INCOMPLETE`, com método `blocksAccess()`), `SubscriptionBillingType`, `InvoiceStatus`.
+Enums em `src/Enum/Subscription/`: `PlanBillingCycle`, `SubscriptionStatus` (`TRIALING|ACTIVE|PAST_DUE|EXPIRED|CANCELED|INCOMPLETE`, com método `blocksAccess()`), `SubscriptionBillingType`, `InvoiceStatus` (`PENDING|CONFIRMED|RECEIVED|OVERDUE|REFUNDED|FAILED|CANCELED|CHARGEBACK` — `CHARGEBACK` cobre os status de contestação do Asaas, ver seção "Estorno e chargeback" abaixo).
 
 ### Status da Subscription — quando cada um acontece
 
@@ -52,12 +52,14 @@ Se nenhum dos três existir, `400 DOCUMENT_REQUIRED`. Se o tamanho não bater co
 
 ## Integração com o Asaas
 
-- **`Service/Gateway/AsaasClient.php`** — wrapper HTTP fino (`Symfony\Contracts\HttpClient\HttpClientInterface`, já vem com o framework). Métodos: `createCustomer`, `updateCustomer`, `tokenizeCreditCard`, `createSubscription`, `updateSubscription`, `cancelSubscription`, `getPayment`, `listPaymentsBySubscription`. Autentica via header `access_token` (não é Bearer/OAuth).
+- **`Service/Gateway/AsaasClient.php`** — wrapper HTTP fino (`Symfony\Contracts\HttpClient\HttpClientInterface`, já vem com o framework). Métodos: `createCustomer`, `updateCustomer`, `tokenizeCreditCard`, `createSubscription`, `updateSubscription`, `cancelSubscription`, `cancelPayment`, `getPayment`, `listPaymentsBySubscription`. Autentica via header `access_token` (não é Bearer/OAuth).
 - **`Service/Subscription/SubscriptionService.php`** — orquestração. Métodos principais: `startTrial`, `choosePlan`, `cancel`, `syncFromPaymentWebhook`, `reconcile`, `listInvoicesByCompany`.
 
 `choosePlan()` chama `reconcile()` internamente **antes** de retornar — o Asaas já gera a primeira cobrança (com QR Code Pix / link de boleto) de forma síncrona ao criar a subscription, então buscamos ela na hora em vez de esperar o webhook chegar. Isso é o que permite o frontend mostrar o "Pagar Agora" imediatamente após escolher o plano (ver doc do front).
 
 `cancel()` **limpa** `asaasSubscriptionId`/`creditCardToken`/`cardLastFour`/`cardBrand` depois de cancelar no Asaas. Isso foi um bug real: sem limpar, uma nova tentativa de `choosePlan` via `syncAsaasSubscription` tentava dar `updateSubscription` numa assinatura já morta no Asaas, que responde `"A assinatura [...] não pode ser atualizada."`. Se você adicionar outro fluxo que mexe em `asaasSubscriptionId`, lembre de considerar esse caso.
+
+**`cancel()` também cancela as cobranças pendentes no Asaas** (`InvoiceRepository::findPendingBySubscription()` busca Invoices `PENDING`/`OVERDUE` da subscription, e cada uma é cancelada via `AsaasClient::cancelPayment()` antes de zerar `asaasSubscriptionId`). Esse foi outro bug real: `DELETE /subscriptions/{id}` no Asaas cancela a **assinatura**, mas não cancela cobranças **já geradas** — um Pix em aberto continuava pagável no Asaas mesmo depois do cancelamento local. Como `asaasSubscriptionId` é zerado logo em seguida, e é exatamente esse campo que `syncFromPaymentWebhook()` usa pra achar a `Subscription` (linha "localiza a `Subscription` pelo `asaasSubscriptionId`" abaixo), um pagamento confirmado depois do cancelamento não tinha como ser reconciliado — o dinheiro entrava no Asaas mas o sistema nunca ficava sabendo. Falha ao cancelar uma cobrança individual (ex.: corrida rara, pagamento confirmado um instante antes do cancelamento) só loga um warning e não impede o resto do cancelamento.
 
 `cancel()` **não** derruba o acesso na hora — a empresa já pagou pelo período vigente, então continua liberada até `currentPeriodEnd` (carência). Isso não é feito zerando nada em `cancel()`: `status` vira `CANCELED` e `currentPeriodEnd` é preservado como estava (não é limpo), e quem decide "bloqueia ou não" em tempo real é `Subscription::isBlocked()` (ver seção "Controle de acesso" abaixo). Uma assinatura cancelada sem nunca ter tido pagamento confirmado (`currentPeriodEnd === null`) bloqueia imediatamente — não há período pago a honrar.
 
@@ -81,9 +83,17 @@ Processamento é **síncrono**, sem fila (`symfony/messenger` não está instala
 
 `Invoice.asaasPaymentId` é **unique** — idempotência natural contra reentrega de webhook.
 
+### Estorno e chargeback
+
+`mapAsaasStatus()` mapeia `REFUNDED`/`REFUND_REQUESTED` pra `InvoiceStatus::REFUNDED` e `CHARGEBACK_REQUESTED`/`CHARGEBACK_DISPUTE`/`AWAITING_CHARGEBACK_REVERSAL` pra `InvoiceStatus::CHARGEBACK`. Em `applyPayment()`, qualquer um desses dois status força a `Subscription` pra `PAST_DUE` — reaproveita o mesmo status/bloqueio de inadimplência (`SubscriptionStatus::blocksAccess()`), em vez de criar um status novo só pra isso. Decisão deliberada: **não** cancela a assinatura no Asaas nesse caso (ao contrário do `cancel()` manual) — se a disputa for revertida a favor da empresa, a recorrência continua intacta sem precisar recriar nada. Antes disso, um estorno/chargeback não mudava o status da `Subscription` — o acesso continuava liberado mesmo com o dinheiro devolvido.
+
+Importante conferir no painel do Asaas (Configurações → Webhooks → Eventos) se os eventos de chargeback estão marcados — a seleção padrão de "Cobranças" nem sempre inclui eles.
+
 ### Testando o webhook de verdade em ambiente local
 
 O Asaas precisa alcançar sua máquina publicamente — `localhost` não funciona. Testado e validado com **Cloudflare Tunnel** (`cloudflared tunnel --url http://localhost:8000`, não exige conta/cadastro, gera uma URL `https://algo.trycloudflare.com` temporária). Alternativas equivalentes: `ngrok` (exige conta/authtoken) ou `npx localtunnel`.
+
+Esse procedimento (subir o túnel, montar a URL do webhook, checklist dos pontos abaixo) está automatizado na skill do Claude Code `.claude/skills/asaas-tunnel/` (`bash .claude/skills/asaas-tunnel/scripts/start-tunnel.sh`) — os passos manuais abaixo continuam valendo como referência/fallback.
 
 No painel sandbox do Asaas (**Configurações → Integrações → Webhooks**), ao cadastrar, preste atenção nestes 3 campos — todos já nos morderam por estarem no valor padrão errado:
 
@@ -121,14 +131,14 @@ A decisão "essa empresa pode usar o sistema?" mora **só** num lugar: `Subscrip
 public function isBlocked(): bool
 {
     if ($this->status === SubscriptionStatus::TRIALING) {
-        return $this->trialEndsAt !== null && $this->trialEndsAt < new \DateTimeImmutable();
+        return $this->trialEndsAt !== null && $this->trialEndsAt < new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
     }
 
     // Cancelar não derruba o acesso na hora — a empresa já pagou pelo período
     // atual, então continua liberada até ele acabar. Sem `currentPeriodEnd`
     // (nunca teve pagamento confirmado), não há período pago a honrar.
     if ($this->status === SubscriptionStatus::CANCELED) {
-        return $this->currentPeriodEnd === null || $this->currentPeriodEnd < new \DateTimeImmutable();
+        return $this->currentPeriodEnd === null || $this->currentPeriodEnd < new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
     }
 
     return $this->status?->blocksAccess() ?? true;
@@ -140,6 +150,41 @@ Isso não era assim originalmente — **era um bug real**: `SubscriptionAccessSu
 Importante: as checagens de `TRIALING` e `CANCELED` são **em tempo real** (comparando `trialEndsAt`/`currentPeriodEnd` com `now`), não dependem só do `status` armazenado — porque nenhum cron muda o `status` nesses casos no exato instante em que o prazo vence (o `EXPIRED` do trial só é setado quando `app:subscription:expire-trials` roda, e é diário; `CANCELED` nunca muda de status sozinho, o prazo é sempre `currentPeriodEnd`). Sem essa checagem em tempo real, teria uma janela de até 24h (trial) ou até o fim do período pago nunca expirar de fato (cancelamento) onde o acesso ficaria incorreto.
 
 **Segundo bug real, mesma raiz (carência do cancelamento)**: o texto de confirmação do modal "Cancelar assinatura" no frontend sempre prometeu "Você perderá acesso ao sistema assim que o período atual terminar" — mas antes dessa correção, `isBlocked()` não tinha o branch de `CANCELED` acima, então caía direto em `$this->status?->blocksAccess()`, que bloqueia `CANCELED` **imediatamente** (ver `SubscriptionStatus::blocksAccess()`), sem honrar o período já pago. Corrigido com o branch de `CANCELED` acima. Testado manualmente contra o backend real: assinatura `ACTIVE` com `currentPeriodEnd` 20 dias no futuro, cancelada → `status: canceled, blocked: false` e rotas de dados continuam 200; movendo `currentPeriodEnd` pra 1 dia no passado (mesma assinatura) → `blocked: true` e rotas voltam a dar 402, sem precisar de nenhum cron. Frontend (`Index.jsx`) também foi ajustado pra diferenciar a mensagem quando `status === 'canceled'` (ver doc do front).
+
+Todas as comparações de data/hora do domínio de assinatura (`isBlocked()`, `canChangePlan()`, `startTrial()`, `cancel()`, `applyPayment()`) usam explicitamente `new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'))`, nunca `new \DateTimeImmutable()` puro — o `now()` sem timezone explícito usa o timezone padrão do PHP configurado no servidor, que pode não ser `America/Sao_Paulo`, causando comparações erradas por algumas horas perto de meia-noite (ex.: `isBlocked()`/`canChangePlan()` decidindo errado por estar usando UTC contra um `currentPeriodEnd` pensado em horário de Brasília). Se adicionar uma comparação de data nova nesse domínio, sempre especificar o timezone explicitamente, do mesmo jeito.
+
+### Bloqueio de troca de plano (`canChangePlan()`)
+
+Regra de negócio: trocar de plano com uma assinatura que já tem período pago vigente derrubava esse período sem aproveitar os dias restantes — o Asaas gerava uma cobrança cheia do novo plano na hora, com vencimento amanhã (`syncAsaasSubscription()`, `nextDueDate: +1 dia`, ver abaixo o motivo desse "+1 dia"), sem nenhum crédito proporcional. A solução adotada foi **não** implementar proração (mais simples, e aqui não há feature-gating entre planos — regra de negócio #5 — então não há urgência real em trocar no meio do ciclo) e sim **bloquear a troca** enquanto o período atual não estiver perto do fim.
+
+`Subscription::canChangePlan()`, mesmo padrão de "fonte única de verdade" do `isBlocked()`:
+
+```php
+public function canChangePlan(): bool
+{
+    $hasRemainingPaidAccess = match ($this->status) {
+        SubscriptionStatus::ACTIVE => true,
+        SubscriptionStatus::CANCELED => $this->currentPeriodEnd !== null
+            && $this->currentPeriodEnd >= new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')),
+        default => false,
+    };
+
+    if (!$hasRemainingPaidAccess || $this->currentPeriodEnd === null) {
+        return true;
+    }
+
+    return $this->currentPeriodEnd->modify('-3 days') <= new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
+}
+```
+
+- Bloqueado (retorna `false`) só quando existe período pago vigente: `ACTIVE`, ou `CANCELED` ainda dentro da carência (mesma janela que `isBlocked()` já usa — ver acima). Fora disso (trial, incompleta, atrasada, expirada, ou cancelada já fora da carência) a troca é sempre permitida — inclusive pra "reativar" depois de cancelar.
+- A janela libera a troca **3 dias antes** do fim do período, não só depois de vencer — decisão deliberada pra evitar o risco de o Asaas já ter gerado/cobrado o próximo ciclo do plano antigo antes do usuário conseguir trocar.
+- `SubscriptionService::choosePlan()` chama esse método logo no início e responde `400 PLAN_CHANGE_NOT_ALLOWED` (via `BadRequestHttpException`) se bloqueado. Frontend: `Index.jsx` desabilita o botão "Trocar de Plano" e mostra a data de liberação quando `subscription.canChangePlan` (exposto pelo `SubscriptionMapper`) vem `false`; `ChoosePlan.jsx` marca o card do plano atual e desabilita seu botão de seleção com a mesma flag.
+- **Efeito colateral proposital**: como a checagem não diferencia "mesmo plano" de "plano diferente", ela também cobre a idempotência da escolha de plano — reenviar o mesmo plano enquanto bloqueado cai na mesma regra. Não existe (nem foi criado) um mecanismo de idempotência dedicado (lock, chave de idempotência) — é só efeito colateral dessa trava. Gap conhecido e não resolvido: enquanto a assinatura ainda está `INCOMPLETE`/`TRIALING` (antes do primeiro pagamento confirmar), `canChangePlan()` sempre libera, então nada no backend impede duas requisições `POST /api/subscription` quase simultâneas nesse estado — só o frontend (`PaymentForm.jsx`, desabilita o botão durante o envio) amortece isso, sem garantia de servidor.
+
+**Bug real #1 (`currentPeriodEnd` errado no primeiro pagamento)**: `applyPayment()` inicialmente copiava `currentPeriodEnd` direto de `Invoice::dueDate`. Como `syncAsaasSubscription()` sempre manda `nextDueDate: +1 dia` pro Asaas — inclusive na primeira assinatura, é isso que permite mostrar "Pagar Agora" na hora em vez de esperar o ciclo (ver acima) — o `dueDate` da **primeira** cobrança de qualquer plano é sempre "amanhã", nunca reflete o ciclo real (mensal/trimestral/anual). Resultado: `currentPeriodEnd` nascia sempre "amanhã", `canChangePlan()` liberava a troca imediatamente após qualquer assinatura nova, e o bloqueio acima nunca chegava a valer no primeiro ciclo. Corrigido calculando `currentPeriodEnd` a partir do **ciclo do plano** (`Plan::billingCycle`) somado a `Invoice::paidAt`, num método dedicado `SubscriptionService::calculatePeriodEnd()`, em vez de copiar o `dueDate` do Asaas. Não mexe em `nextDueDate: +1 dia` — isso continua controlando a cobrança real no Asaas e não deve mudar. Testado contra dado real: assinatura Trimestral paga em `2026-07-15` → `currentPeriodEnd` recalculado (via `app:subscription:reconcile`) foi de `2026-07-16` (bug) pra `2026-10-15` (correto).
+
+**Bug real #2 (cancelamento não travava a troca)**: a primeira versão de `canChangePlan()` só verificava `status === ACTIVE`. Como cancelar muda o status pra `CANCELED` (mesmo com `currentPeriodEnd` ainda no futuro, dentro da carência), a troca destravava na hora do cancelamento — e pior, escolher um plano novo nesse estado fazia `choosePlan()` setar `status = INCOMPLETE` (por não ser `ACTIVE`), e `INCOMPLETE` bloqueia acesso **imediatamente** (`SubscriptionStatus::blocksAccess()`), cortando na hora o acesso que a carência do cancelamento deveria honrar. Corrigido generalizando `canChangePlan()` pra tratar `CANCELED` com carência vigente do mesmo jeito que `ACTIVE` (código acima).
 
 ## Comandos (cron — não tem fila/scheduler instalado, de propósito)
 
@@ -172,8 +217,9 @@ Nenhum desses tem agendamento automático ainda — falta configurar cron real n
 ## O que falta (não implementado ainda)
 
 - CRUD admin pra planos (hoje só existe leitura pública; editar preço/trial é direto no banco).
-- Cron real agendado (host/plataforma) pros 3 comandos acima.
+- Cron real agendado (host/plataforma) pros 3 comandos acima — sistema ainda não está em produção, então isso ainda não foi testado nem configurado de verdade.
 - Credenciais e webhook de **produção** — o fluxo completo (customer, subscription, cobrança, webhook automático) já foi validado de ponta a ponta no **sandbox**, incluindo o webhook chegando sozinho via túnel público. Falta só repetir a configuração com chave/URL de produção quando for a hora.
 - Painel admin pra ver assinaturas de todas as empresas.
-- Tela de cadastro de cartão pra planos de cartão de crédito não foi testada contra o Asaas de verdade ainda (só Pix foi validado ponta a ponta com pagamento real confirmado, incluindo o QR Code embutido).
+- Tela de cadastro de cartão pra planos de cartão de crédito não foi testada contra o Asaas de verdade ainda (só Pix foi validado ponta a ponta com pagamento real confirmado, incluindo o QR Code embutido). Adiado deliberadamente — prioridade atual é garantir Pix.
 - QR Code embutido só existe pra Pix — boleto continua mandando pro `invoiceUrl` do Asaas (com a propaganda). Não é bug, foi escopo combinado — se um dia quiser reativar boleto no frontend, considerar resolver isso também.
+- Idempotência de `choosePlan()` durante `INCOMPLETE`/`TRIALING` (antes do primeiro pagamento confirmar) depende só do frontend desabilitar o botão durante o envio — não há trava de servidor contra duas requisições `POST /api/subscription` quase simultâneas nesse estado. Baixo risco (gera no máximo uma cobrança extra cancelável, não corrompe estado), deixado de fora conscientemente — ver seção "Bloqueio de troca de plano" acima.

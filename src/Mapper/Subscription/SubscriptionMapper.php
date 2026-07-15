@@ -21,6 +21,7 @@ class SubscriptionMapper
             status: $subscription->getStatus()->value,
             statusLabel: $subscription->getStatus()->getLabel(),
             blocked: $subscription->isBlocked(),
+            canChangePlan: $subscription->canChangePlan(),
             billingType: $subscription->getBillingType()->value,
             billingTypeLabel: $subscription->getBillingType()->getLabel(),
             plan: $plan ? $this->planMapper->toOutputDTO($plan) : null,

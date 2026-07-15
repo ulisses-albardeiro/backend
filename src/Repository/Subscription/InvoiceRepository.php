@@ -4,6 +4,8 @@ namespace App\Repository\Subscription;
 
 use App\Entity\Company;
 use App\Entity\Subscription\Invoice;
+use App\Entity\Subscription\Subscription;
+use App\Enum\Subscription\InvoiceStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -36,6 +38,20 @@ class InvoiceRepository extends ServiceEntityRepository
     public function findByCompany(Company $company): array
     {
         return $this->findBy(['company' => $company], ['dueDate' => 'DESC']);
+    }
+
+    /**
+     * @return Invoice[]
+     */
+    public function findPendingBySubscription(Subscription $subscription): array
+    {
+        return $this->createQueryBuilder('i')
+            ->andWhere('i.subscription = :subscription')
+            ->andWhere('i.status IN (:statuses)')
+            ->setParameter('subscription', $subscription)
+            ->setParameter('statuses', [InvoiceStatus::PENDING, InvoiceStatus::OVERDUE])
+            ->getQuery()
+            ->getResult();
     }
 
     //    /**

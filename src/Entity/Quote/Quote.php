@@ -100,7 +100,7 @@ class Quote
     public function setInitialValues(): void
     {
         if ($this->code === null) {
-            $year = date('dmY');
+            $year = (new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')))->format('dmY');
             $uniquePart = strtoupper(substr(uniqid(), -4));
 
             $this->code = sprintf('ORC-%s-%s', $year, $uniquePart);

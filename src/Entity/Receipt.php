@@ -65,7 +65,7 @@ class Receipt
         }
 
         if ($this->code === null) {
-            $year = date('dmY');
+            $year = (new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')))->format('dmY');
             $uniquePart = strtoupper(substr(uniqid(), -4));
 
             $this->code = sprintf('REC-%s-%s', $year, $uniquePart);

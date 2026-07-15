@@ -32,7 +32,7 @@ class ExpireTrialsCommand extends Command
             ->andWhere('s.status = :status')
             ->andWhere('s.trialEndsAt < :now')
             ->setParameter('status', SubscriptionStatus::TRIALING)
-            ->setParameter('now', new \DateTimeImmutable())
+            ->setParameter('now', new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')))
             ->getQuery()
             ->getResult();
 

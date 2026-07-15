@@ -11,6 +11,7 @@ enum InvoiceStatus: string
     case REFUNDED = 'refunded';
     case FAILED = 'failed';
     case CANCELED = 'canceled';
+    case CHARGEBACK = 'chargeback';
 
     public function getLabel(): string
     {
@@ -22,6 +23,7 @@ enum InvoiceStatus: string
             self::REFUNDED => 'Estornada',
             self::FAILED => 'Falhou',
             self::CANCELED => 'Cancelada',
+            self::CHARGEBACK => 'Contestada',
         };
     }
 }

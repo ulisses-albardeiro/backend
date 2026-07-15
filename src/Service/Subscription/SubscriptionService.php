@@ -7,6 +7,7 @@ use App\Entity\Subscription\Invoice;
 use App\Entity\Subscription\Plan;
 use App\Entity\Subscription\Subscription;
 use App\Enum\Subscription\InvoiceStatus;
+use App\Enum\Subscription\PlanBillingCycle;
 use App\Enum\Subscription\SubscriptionBillingType;
 use App\Enum\Subscription\SubscriptionStatus;
 use App\Mapper\Subscription\InvoiceMapper;
@@ -19,8 +20,10 @@ use App\Repository\Subscription\PlanRepository;
 use App\Repository\Subscription\SubscriptionRepository;
 use App\Service\Gateway\AsaasClient;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class SubscriptionService
 {
@@ -33,6 +36,7 @@ class SubscriptionService
         private InvoiceMapper $invoiceMapper,
         private AsaasClient $asaasClient,
         private EntityManagerInterface $entityManager,
+        private LoggerInterface $logger,
     ) {}
 
     public function startTrial(Company $company): Subscription
@@ -45,7 +49,7 @@ class SubscriptionService
         $subscription->setCompany($company);
         $subscription->setStatus(SubscriptionStatus::TRIALING);
         $subscription->setBillingType(SubscriptionBillingType::UNDEFINED);
-        $subscription->setTrialEndsAt(new \DateTimeImmutable("+{$trialDays} days"));
+        $subscription->setTrialEndsAt((new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')))->modify("+{$trialDays} days"));
 
         $this->entityManager->persist($subscription);
         $this->entityManager->flush();
@@ -72,6 +76,10 @@ class SubscriptionService
 
         if (!$subscription) {
             throw new NotFoundHttpException('SUBSCRIPTION_NOT_FOUND');
+        }
+
+        if (!$subscription->canChangePlan()) {
+            throw new BadRequestHttpException('PLAN_CHANGE_NOT_ALLOWED');
         }
 
         // A empresa pode não ter CNPJ (MEI/autônomo) — nesse caso o CPF/CNPJ do
@@ -104,7 +112,7 @@ class SubscriptionService
         // (troca de plano de quem já paga não deve derrubar o acesso).
         if ($subscription->getStatus() !== SubscriptionStatus::ACTIVE) {
             $subscription->setStatus(SubscriptionStatus::INCOMPLETE);
-            $subscription->setTrialEndsAt(new \DateTimeImmutable());
+            $subscription->setTrialEndsAt(new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')));
         }
 
         // O Asaas já gera a primeira cobrança (com QR Code Pix / link do boleto) de forma
@@ -125,6 +133,22 @@ class SubscriptionService
             throw new NotFoundHttpException('SUBSCRIPTION_NOT_FOUND');
         }
 
+        // Cancela no Asaas qualquer cobrança já gerada e ainda não paga — senão ela
+        // continua pagável por lá mesmo após o cancelamento, e o pagamento não teria
+        // como ser reconciliado localmente (o vínculo com a subscription é zerado abaixo).
+        foreach ($this->invoiceRepository->findPendingBySubscription($subscription) as $invoice) {
+            try {
+                $this->asaasClient->cancelPayment($invoice->getAsaasPaymentId());
+                $invoice->setStatus(InvoiceStatus::CANCELED);
+            } catch (HttpException $e) {
+                $this->logger->warning('Falha ao cancelar cobrança pendente no Asaas.', [
+                    'invoice_id' => $invoice->getId(),
+                    'asaas_payment_id' => $invoice->getAsaasPaymentId(),
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         if ($subscription->getAsaasSubscriptionId()) {
             $this->asaasClient->cancelSubscription($subscription->getAsaasSubscriptionId());
         }
@@ -137,7 +161,7 @@ class SubscriptionService
         $subscription->setCardBrand(null);
 
         $subscription->setStatus(SubscriptionStatus::CANCELED);
-        $subscription->setCanceledAt(new \DateTimeImmutable());
+        $subscription->setCanceledAt(new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')));
 
         $this->entityManager->flush();
     }
@@ -216,7 +240,7 @@ class SubscriptionService
         $invoice->setAsaasPaymentId($payment['id']);
         $invoice->setBillingType($this->mapAsaasBillingType($payment['billingType'] ?? null) ?? $subscription->getBillingType());
         $invoice->setValueCents((int) round((float) ($payment['value'] ?? 0) * 100));
-        $invoice->setDueDate(new \DateTimeImmutable($payment['dueDate'] ?? 'now'));
+        $invoice->setDueDate(new \DateTimeImmutable($payment['dueDate'] ?? 'now', new \DateTimeZone('America/Sao_Paulo')));
         $invoice->setInvoiceUrl($payment['invoiceUrl'] ?? $invoice->getInvoiceUrl());
         $invoice->setRawPayload($payment);
 
@@ -224,17 +248,42 @@ class SubscriptionService
         $invoice->setStatus($status);
 
         if (in_array($status, [InvoiceStatus::CONFIRMED, InvoiceStatus::RECEIVED], true)) {
-            $invoice->setPaidAt(new \DateTimeImmutable($payment['paymentDate'] ?? $payment['clientPaymentDate'] ?? 'now'));
+            $invoice->setPaidAt(new \DateTimeImmutable($payment['paymentDate'] ?? $payment['clientPaymentDate'] ?? 'now', new \DateTimeZone('America/Sao_Paulo')));
         }
 
         $this->entityManager->persist($invoice);
 
         if (in_array($status, [InvoiceStatus::CONFIRMED, InvoiceStatus::RECEIVED], true)) {
             $subscription->setStatus(SubscriptionStatus::ACTIVE);
-            $subscription->setCurrentPeriodEnd($invoice->getDueDate());
+            $subscription->setCurrentPeriodEnd($this->calculatePeriodEnd($subscription, $invoice));
         } elseif ($status === InvoiceStatus::OVERDUE) {
             $subscription->setStatus(SubscriptionStatus::PAST_DUE);
+        } elseif (in_array($status, [InvoiceStatus::REFUNDED, InvoiceStatus::CHARGEBACK], true)) {
+            // Dinheiro devolvido (estorno) ou contestado (chargeback) — bloqueia o acesso
+            // reaproveitando PAST_DUE, sem cancelar a assinatura no Asaas (a disputa pode
+            // ser revertida a favor da empresa, e a recorrência continuaria intacta).
+            $subscription->setStatus(SubscriptionStatus::PAST_DUE);
         }
+    }
+
+    /**
+     * Até quando esse pagamento cobre o serviço. Não usa `Invoice::dueDate` direto porque o
+     * Asaas sempre recebe `nextDueDate: +1 dia` na primeira cobrança de qualquer plano (ver
+     * syncAsaasSubscription — é o que permite pagar via Pix na hora, sem esperar o ciclo), o
+     * que faria o primeiro `currentPeriodEnd` cair sempre "amanhã", mesmo em planos
+     * trimestrais/anuais. Calculamos a partir do ciclo do plano + data do pagamento em vez
+     * disso, pra refletir o período pago de verdade.
+     */
+    private function calculatePeriodEnd(Subscription $subscription, Invoice $invoice): \DateTimeImmutable
+    {
+        $base = $invoice->getPaidAt() ?? new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
+
+        return match ($subscription->getPlan()?->getBillingCycle()) {
+            PlanBillingCycle::MONTHLY => $base->modify('+1 month'),
+            PlanBillingCycle::QUARTERLY => $base->modify('+3 months'),
+            PlanBillingCycle::YEARLY => $base->modify('+1 year'),
+            default => $invoice->getDueDate(),
+        };
     }
 
     private function mapAsaasStatus(string $status): InvoiceStatus
@@ -244,6 +293,7 @@ class SubscriptionService
             'RECEIVED', 'RECEIVED_IN_CASH' => InvoiceStatus::RECEIVED,
             'OVERDUE' => InvoiceStatus::OVERDUE,
             'REFUNDED', 'REFUND_REQUESTED' => InvoiceStatus::REFUNDED,
+            'CHARGEBACK_REQUESTED', 'CHARGEBACK_DISPUTE', 'AWAITING_CHARGEBACK_REVERSAL' => InvoiceStatus::CHARGEBACK,
             default => InvoiceStatus::PENDING,
         };
     }
@@ -344,7 +394,7 @@ class SubscriptionService
             'customer' => $subscription->getAsaasCustomerId(),
             'billingType' => strtoupper($billingType->value),
             'value' => $plan->getPriceCents() / 100,
-            'nextDueDate' => (new \DateTimeImmutable('+1 day'))->format('Y-m-d'),
+            'nextDueDate' => (new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')))->modify('+1 day')->format('Y-m-d'),
             'cycle' => strtoupper($plan->getBillingCycle()->value),
             'description' => $plan->getName(),
         ];

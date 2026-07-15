@@ -124,17 +124,40 @@ class Subscription
     public function isBlocked(): bool
     {
         if ($this->status === SubscriptionStatus::TRIALING) {
-            return $this->trialEndsAt !== null && $this->trialEndsAt < new \DateTimeImmutable();
+            return $this->trialEndsAt !== null && $this->trialEndsAt < new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
         }
 
         // Cancelar não derruba o acesso na hora — a empresa já pagou pelo período
         // atual, então continua liberada até ele acabar. Sem `currentPeriodEnd`
         // (nunca teve pagamento confirmado), não há período pago a honrar.
         if ($this->status === SubscriptionStatus::CANCELED) {
-            return $this->currentPeriodEnd === null || $this->currentPeriodEnd < new \DateTimeImmutable();
+            return $this->currentPeriodEnd === null || $this->currentPeriodEnd < new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
         }
 
         return $this->status?->blocksAccess() ?? true;
+    }
+
+    /**
+     * "Dá pra trocar/escolher plano agora?" — bloqueado enquanto ainda existe período pago
+     * vigente (ACTIVE, ou CANCELED ainda em carência — mesma janela que `isBlocked()` usa
+     * pra liberar acesso) e faltar mais de 3 dias pro fim desse período, pra não perder os
+     * dias já pagos. Sem período pago vigente (trial, incompleta, atrasada, expirada, ou
+     * cancelada já fora da carência), trocar/escolher plano sempre é permitido.
+     */
+    public function canChangePlan(): bool
+    {
+        $hasRemainingPaidAccess = match ($this->status) {
+            SubscriptionStatus::ACTIVE => true,
+            SubscriptionStatus::CANCELED => $this->currentPeriodEnd !== null
+                && $this->currentPeriodEnd >= new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')),
+            default => false,
+        };
+
+        if (!$hasRemainingPaidAccess || $this->currentPeriodEnd === null) {
+            return true;
+        }
+
+        return $this->currentPeriodEnd->modify('-3 days') <= new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
     }
 
     public function getBillingType(): ?SubscriptionBillingType

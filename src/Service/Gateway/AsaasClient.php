@@ -44,6 +44,11 @@ class AsaasClient
         $this->request('DELETE', "/subscriptions/{$asaasSubscriptionId}");
     }
 
+    public function cancelPayment(string $asaasPaymentId): void
+    {
+        $this->request('DELETE', "/payments/{$asaasPaymentId}");
+    }
+
     public function getPayment(string $asaasPaymentId): array
     {
         return $this->request('GET', "/payments/{$asaasPaymentId}");

@@ -24,7 +24,7 @@ class TransactionMapper
 
         $transaction->setDescription($dto->description);
         $transaction->setAmount($dto->amount);
-        $transaction->setDate(new \DateTimeImmutable($dto->date));
+        $transaction->setDate(new \DateTimeImmutable($dto->date, new \DateTimeZone('America/Sao_Paulo')));
         $transaction->setType(TransactionType::from($dto->type));
         $transaction->setStatus(TransactionStatus::from($dto->status));
         $transaction->setCategory($category);

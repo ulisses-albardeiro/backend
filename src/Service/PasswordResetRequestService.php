@@ -36,7 +36,7 @@ class PasswordResetRequestService
         $request->setUser($user);
         $request->setCode((string) random_int(100000, 999999));
         $request->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')));
-        $request->setExpiresAt(new \DateTimeImmutable('+15 minutes'));
+        $request->setExpiresAt((new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')))->modify('+15 minutes'));
         $request->setIsUsed(false);
 
         $this->entityManager->persist($request);
