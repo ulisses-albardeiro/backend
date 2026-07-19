@@ -318,8 +318,11 @@ class SubscriptionService
 
     private function resolveDocument(Company $company, Subscription $subscription, ChoosePlanInputDTO $dto): string
     {
-        $document = $company->getRegistrationNumber()
-            ?: $this->normalizeDocument($dto->holderCpfCnpj)
+        // O front agora sempre mostra o campo (pré-preenchido com o CNPJ da empresa,
+        // se houver) e deixa o usuário editar — o que ele confirma na tela é que vale,
+        // por isso o DTO tem prioridade sobre o dado cadastrado da empresa.
+        $document = $this->normalizeDocument($dto->holderCpfCnpj)
+            ?: $company->getRegistrationNumber()
             ?: $subscription->getDocumentNumber();
 
         if (!$document) {
