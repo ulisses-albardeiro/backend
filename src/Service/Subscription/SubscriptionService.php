@@ -43,7 +43,7 @@ class SubscriptionService
     {
         $defaultPlan = $this->planService->getDefaultActive();
 
-        $trialDays = $defaultPlan?->getTrialDays() ?? 14;
+        $trialDays = $defaultPlan?->getTrialDays() ?? 3;
 
         $subscription = new Subscription();
         $subscription->setCompany($company);
