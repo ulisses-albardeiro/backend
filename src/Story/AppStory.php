@@ -18,5 +18,12 @@ final class AppStory extends Story
             'owner' => $user
         ]);
         CustomerFactory::createMany(50);
+
+        UserFactory::createOne([
+            'email' => 'admin@admin.com',
+            'password' => '12345678',
+            'roles' => ['ROLE_SUPER_ADMIN'],
+            'name' => 'Admin',
+        ]);
     }
 }
