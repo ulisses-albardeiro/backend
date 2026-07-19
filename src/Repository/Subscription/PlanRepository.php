@@ -35,6 +35,15 @@ class PlanRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    public function findOneByCode(string $code): ?Plan
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.code = :code')
+            ->setParameter('code', $code)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     //    /**
     //     * @return Plan[] Returns an array of Plan objects
     //     */
