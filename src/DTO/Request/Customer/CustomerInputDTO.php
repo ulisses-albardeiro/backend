@@ -3,7 +3,9 @@
 namespace App\DTO\Request\Customer;
 
 use App\Enum\CustomerType;
+use App\Validator\DocumentValidator;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 readonly class CustomerInputDTO
 {
@@ -57,4 +59,14 @@ readonly class CustomerInputDTO
 
         public ?string $notes = null,
     ) {}
+
+    #[Assert\Callback]
+    public function validateDocument(ExecutionContextInterface $context): void
+    {
+        if (!DocumentValidator::isValidForType($this->document, $this->type)) {
+            $context->buildViolation('CPF/CNPJ inválido para o tipo de pessoa selecionado.')
+                ->atPath('document')
+                ->addViolation();
+        }
+    }
 }
