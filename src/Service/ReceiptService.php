@@ -76,6 +76,37 @@ class ReceiptService
         return $this->mapper->toOutputDTO($receipt);
     }
 
+    public function update(int $id, ReceiptInputDTO $dto, Company $company): ReceiptOutputDTO
+    {
+        $receipt = $this->repository->findOneBy(['id' => $id, 'company' => $company]);
+
+        if (!$receipt) {
+            throw new NotFoundHttpException('RECEIPT_NOT_FOUND');
+        }
+
+        $customer = $this->customerRepository->findOneBy([
+            'id' => $dto->customerId,
+            'company' => $company
+        ]);
+
+        if (!$customer) {
+            throw new NotFoundHttpException('CUSTOMER_NOT_FOUND');
+        }
+
+        $quote = null;
+        if ($dto->quoteId) {
+            $quote = $this->quoteRepository->findOneBy([
+                'id' => $dto->quoteId,
+                'company' => $company
+            ]);
+        }
+
+        $this->mapper->toEntity($dto, $company, $customer, $quote, $receipt);
+        $this->em->flush();
+
+        return $this->mapper->toOutputDTO($receipt);
+    }
+
     public function delete(int $id, Company $company): void
     {
         $receipt = $this->repository->findOneBy(['id' => $id, 'company' => $company]);

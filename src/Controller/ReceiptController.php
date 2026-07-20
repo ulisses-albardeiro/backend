@@ -69,6 +69,29 @@ final class ReceiptController extends AbstractController
         }
     }
 
+    #[Route('/{id}', name: 'update', methods: ['PUT'], requirements: ['id' => '\d+'])]
+    public function update(int $id, #[MapRequestPayload] ReceiptInputDTO $dto): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        try {
+            $receipt = $this->service->update($id, $dto, $user->getCompany());
+            return $this->json($receipt, 200);
+        } catch (NotFoundHttpException $e) {
+            return $this->json(['message' => $e->getMessage()], 404);
+        } catch (BadRequestHttpException $e) {
+            return $this->json(['message' => $e->getMessage()], 400);
+        } catch (\Exception $e) {
+            $this->logger->error('Update receipt error', [
+                'receipt_id' => $id,
+                'user_id' => $user->getId(),
+                'error' => $e->getMessage()
+            ]);
+            return $this->json(['message' => 'ERROR_UPDATING_RECEIPT'], 500);
+        }
+    }
+
     #[Route('/{id}', name: 'delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
     public function delete(int $id): JsonResponse
     {
