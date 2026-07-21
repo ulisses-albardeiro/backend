@@ -6,6 +6,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class WorkOrderItemInputDTO
 {
+    public ?int $id = null;
+
     #[Assert\NotBlank(message: "A descrição do item é obrigatória")]
     public string $description;
 
@@ -22,4 +24,7 @@ class WorkOrderItemInputDTO
 
     #[Assert\Positive]
     public ?int $laborId = null;
+
+    #[Assert\Positive]
+    public ?int $sourceQuoteItemId = null;
 }

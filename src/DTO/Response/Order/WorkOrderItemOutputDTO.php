@@ -16,5 +16,6 @@ readonly class WorkOrderItemOutputDTO
         public ?int $laborId,
         public ?string $laborName,
         public ?string $laborUnit,
+        public array $images = [],
     ) {}
 }

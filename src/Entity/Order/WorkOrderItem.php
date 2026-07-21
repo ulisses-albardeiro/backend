@@ -5,6 +5,8 @@ namespace App\Entity\Order;
 use App\Entity\Labor\Labor;
 use App\Entity\Product\Product;
 use App\Repository\Order\WorkOrderItemRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -37,6 +39,17 @@ class WorkOrderItem
 
     #[ORM\Column]
     private ?int $totalPrice = null;
+
+    /**
+     * @var Collection<int, WorkOrderItemImage>
+     */
+    #[ORM\OneToMany(mappedBy: 'workOrderItem', targetEntity: WorkOrderItemImage::class, cascade: ['persist'], orphanRemoval: true)]
+    private Collection $images;
+
+    public function __construct()
+    {
+        $this->images = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -123,6 +136,35 @@ class WorkOrderItem
     public function setTotalPrice(int $totalPrice): static
     {
         $this->totalPrice = $totalPrice;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, WorkOrderItemImage>
+     */
+    public function getImages(): Collection
+    {
+        return $this->images;
+    }
+
+    public function addImage(WorkOrderItemImage $image): static
+    {
+        if (!$this->images->contains($image)) {
+            $this->images->add($image);
+            $image->setWorkOrderItem($this);
+        }
+
+        return $this;
+    }
+
+    public function removeImage(WorkOrderItemImage $image): static
+    {
+        if ($this->images->removeElement($image)) {
+            if ($image->getWorkOrderItem() === $this) {
+                $image->setWorkOrderItem(null);
+            }
+        }
 
         return $this;
     }

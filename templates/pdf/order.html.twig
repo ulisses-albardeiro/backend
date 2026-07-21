@@ -106,6 +106,20 @@
                 text-transform: uppercase;
                 font-size: 9px;
             }
+            .item-photo-box {
+                display: inline-block;
+                width: 150px;
+                height: 80px;
+                margin: 0 8px 8px 0;
+                border: 1px solid #eee;
+                text-align: center;
+                vertical-align: top;
+                overflow: hidden;
+            }
+            .item-photo-box img {
+                max-width: 148px;
+                max-height: 78px;
+            }
             .footer {
                 position: fixed;
                 bottom: -20px;
@@ -218,6 +232,31 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        {% set hasPhotos = false %}
+        {% for item in order.items %}
+            {% if photosByItemId[item.id] is defined and photosByItemId[item.id]|length > 0 %}
+                {% set hasPhotos = true %}
+            {% endif %}
+        {% endfor %}
+
+        {% if hasPhotos %}
+            <div style="margin-top: 15px;">
+                <div style="font-size: 10px; color: #666; font-weight: bold;">FOTOS DOS ITENS:</div>
+                {% for item in order.items %}
+                    {% if photosByItemId[item.id] is defined and photosByItemId[item.id]|length > 0 %}
+                        <div style="margin-top: 10px; page-break-inside: avoid;">
+                            <div style="font-size: 10px; font-weight: bold; margin-bottom: 5px;">Item {{ loop.index }} — {{ item.productName ?: item.laborName ?: item.description }}</div>
+                            <div>
+                                {% for photo in photosByItemId[item.id] %}
+                                    <span class="item-photo-box"><img src="{{ photo }}"></span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
 
         <div class="totals">
             <div class="totals-row grand-total">

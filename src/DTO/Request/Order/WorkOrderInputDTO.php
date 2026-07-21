@@ -30,7 +30,7 @@ class WorkOrderInputDTO
 
     public ?string $equipment = null;
 
-    public ?int $assetId;
+    public ?int $assetId = null;
 
     public ?DateTimeImmutable $startDate = null;
 

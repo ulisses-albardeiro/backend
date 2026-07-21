@@ -68,6 +68,8 @@ class QuoteItemImageService
 
     public function getSubDir(Company $company): string
     {
-        return 'company_' . md5($company->getCreatedAt()->format('U')) . '/quote_items';
+        // Compartilhado com WorkOrderItemImageService::getSubDir() — quando uma OS copia fotos
+        // de um orçamento, o mesmo nome de arquivo precisa resolver pro mesmo diretório físico.
+        return 'company_' . md5($company->getCreatedAt()->format('U')) . '/docs_images';
     }
 }

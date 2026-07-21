@@ -8,6 +8,7 @@ use App\Service\Order\WorkOrderService;
 use App\DTO\Request\Order\WorkOrderInputDTO;
 use App\Service\Pdf\PdfGeneratorService;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -48,15 +49,16 @@ final class WorkOrderController extends AbstractController
     }
 
     #[Route('', name: 'store', methods: ['POST'])]
-    public function store(#[MapRequestPayload] WorkOrderInputDTO $dto): JsonResponse
+    public function store(#[MapRequestPayload] WorkOrderInputDTO $dto, Request $request): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
 
         try {
-            $workOrder = $this->service->create($dto, $user->getCompany());
+            $itemImageFiles = $request->files->get('items') ?? [];
+            $workOrder = $this->service->create($dto, $user->getCompany(), $itemImageFiles);
             return $this->json($workOrder, 201);
-        } catch (BadRequestHttpException $e) {
+        } catch (BadRequestHttpException|\InvalidArgumentException $e) {
             return $this->json(['message' => $e->getMessage()], 400);
         } catch (\Exception $e) {
             $this->logger->error('Failed to save work order.', [
@@ -68,17 +70,18 @@ final class WorkOrderController extends AbstractController
     }
 
     #[Route('/{id}', name: 'update', methods: ['PUT'])]
-    public function update(int $id, #[MapRequestPayload] WorkOrderInputDTO $dto): JsonResponse
+    public function update(int $id, #[MapRequestPayload] WorkOrderInputDTO $dto, Request $request): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
 
         try {
-            $workOrder = $this->service->update($id, $dto, $user->getCompany());
+            $itemImageFiles = $request->files->get('items') ?? [];
+            $workOrder = $this->service->update($id, $dto, $user->getCompany(), $itemImageFiles);
             return $this->json($workOrder, 200);
         } catch (NotFoundHttpException $e) {
             return $this->json(['message' => $e->getMessage()], 404);
-        } catch (BadRequestHttpException $e) {
+        } catch (BadRequestHttpException|\InvalidArgumentException $e) {
             return $this->json(['message' => $e->getMessage()], 400);
         } catch (\Exception $e) {
             $this->logger->error('Update work order error', [

@@ -33,17 +33,18 @@ class WorkOrderService
         private CompanyMapper $companyMapper,
         private CustomerMapper $customerMapper,
         private FileService $fileService,
-        private CustomerAssetRepository $customerAssetRepository
+        private CustomerAssetRepository $customerAssetRepository,
+        private WorkOrderItemImageService $workOrderItemImageService
     ) {}
 
-    public function create(WorkOrderInputDTO $dto, Company $company): WorkOrderOutputDTO
+    public function create(WorkOrderInputDTO $dto, Company $company, array $itemImageFiles = []): WorkOrderOutputDTO
     {
         $customerAsset = $this->customerAssetRepository->findOneBy([
             'id' => $dto->assetId,
             'company' => $company
         ]);
 
-        $workOrder = $this->mapper->toEntity($dto, $company, $customerAsset);
+        $workOrder = $this->mapper->toEntity($dto, $company, $customerAsset, null, $itemImageFiles);
 
         $transaction = $this->createAutomaticTransaction($workOrder, $company);
 
@@ -55,7 +56,7 @@ class WorkOrderService
         return $this->mapper->toOutputDTO($workOrder);
     }
 
-    public function update(int $id, WorkOrderInputDTO $dto, Company $company): WorkOrderOutputDTO
+    public function update(int $id, WorkOrderInputDTO $dto, Company $company, array $itemImageFiles = []): WorkOrderOutputDTO
     {
         $workOrder = $this->repository->findOneBy(['id' => $id, 'company' => $company]);
 
@@ -64,7 +65,7 @@ class WorkOrderService
             'company' => $company
         ]);
 
-        $this->mapper->toEntity($dto, $company, $workOrder, $customerAsset);
+        $this->mapper->toEntity($dto, $company, $customerAsset, $workOrder, $itemImageFiles);
 
         $transaction = $workOrder->getTransaction();
         $transaction->setAmount($workOrder->getTotalAmount());
@@ -150,6 +151,14 @@ class WorkOrderService
         $companyDto = $this->companyMapper->toOutputDTO($company, $logoBase64);
         $customerDto = $this->customerMapper->toOutputDTO($quoteEntity->getCustomer());
 
-        return new OrderDocument($quoteDto, $companyDto, $customerDto);
+        $itemImagesSubDir = $this->workOrderItemImageService->getSubDir($company);
+        $photosByItemId = [];
+        foreach ($quoteEntity->getWorkOrderItems() as $item) {
+            foreach ($item->getImages() as $image) {
+                $photosByItemId[$item->getId()][] = $this->fileService->getBase64($itemImagesSubDir, $image->getPath());
+            }
+        }
+
+        return new OrderDocument($quoteDto, $companyDto, $customerDto, $photosByItemId);
     }
 }
