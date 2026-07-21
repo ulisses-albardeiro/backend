@@ -8,6 +8,7 @@ use App\Service\QuoteService;
 use App\DTO\Request\Quote\QuoteInputDTO;
 use App\Service\Pdf\PdfGeneratorService;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -48,15 +49,16 @@ final class QuoteController extends AbstractController
     }
 
     #[Route('', name: 'store', methods: ['POST'])]
-    public function store(#[MapRequestPayload] QuoteInputDTO $dto): JsonResponse
+    public function store(#[MapRequestPayload] QuoteInputDTO $dto, Request $request): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
 
         try {
-            $quote = $this->service->create($dto, $user->getCompany());
+            $itemImageFiles = $request->files->get('items') ?? [];
+            $quote = $this->service->create($dto, $user->getCompany(), $itemImageFiles);
             return $this->json($quote, 201);
-        } catch (BadRequestHttpException $e) {
+        } catch (BadRequestHttpException|\InvalidArgumentException $e) {
             return $this->json(['message' => $e->getMessage()], 400);
         } catch (\Exception $e) {
             $this->logger->error('Failed to save quote.', [
@@ -68,17 +70,18 @@ final class QuoteController extends AbstractController
     }
 
     #[Route('/{id}', name: 'update', methods: ['PUT'])]
-    public function update(int $id, #[MapRequestPayload] QuoteInputDTO $dto): JsonResponse
+    public function update(int $id, #[MapRequestPayload] QuoteInputDTO $dto, Request $request): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
 
         try {
-            $quote = $this->service->update($id, $dto, $user->getCompany());
+            $itemImageFiles = $request->files->get('items') ?? [];
+            $quote = $this->service->update($id, $dto, $user->getCompany(), $itemImageFiles);
             return $this->json($quote, 200);
         } catch (NotFoundHttpException $e) {
             return $this->json(['message' => $e->getMessage()], 404);
-        } catch (BadRequestHttpException $e) {
+        } catch (BadRequestHttpException|\InvalidArgumentException $e) {
             return $this->json(['message' => $e->getMessage()], 400);
         } catch (\Exception $e) {
             $this->logger->error('Update quote error', [

@@ -14,6 +14,18 @@ class FileService
 
     public function upload(UploadedFile $file, string $subDirectory): string
     {
+        if (!$file->isValid()) {
+            // Upload rejeitado pelo próprio PHP (ex.: maior que upload_max_filesize)
+            // antes mesmo de chegar no Symfony — tmp_name fica vazio, e tentar
+            // processá-lo (ex.: guessExtension) quebra com um erro de mime type
+            // sem sentido pro usuário. Falha aqui com uma mensagem clara.
+            throw new \InvalidArgumentException(\sprintf(
+                'Falha ao enviar o arquivo "%s": %s',
+                $file->getClientOriginalName(),
+                $file->getErrorMessage()
+            ));
+        }
+
         $uploadPath = $this->targetDirectory . '/' . $subDirectory;
 
         if (!is_dir($uploadPath)) {

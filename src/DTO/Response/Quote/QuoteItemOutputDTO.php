@@ -16,5 +16,6 @@ readonly class QuoteItemOutputDTO
         public ?int $productId,
         public ?string $productName,
         public ?string $productUnit,
+        public array $images = [],
     ) {}
 }
