@@ -13,16 +13,21 @@ use App\DTO\Response\Quote\QuoteOutputDTO;
 use App\DTO\Response\Quote\QuoteItemOutputDTO;
 use App\Entity\Customer\CustomerAsset;
 use App\Repository\CustomerRepository;
+use App\Service\QuoteItemImageService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class QuoteMapper
 {
     public function __construct(
         private CustomerRepository $customerRepository,
-        private EntityManagerInterface $em
+        private EntityManagerInterface $em,
+        private QuoteItemImageService $quoteItemImageService
     ) {}
 
-    public function toEntity(QuoteInputDTO $dto, Company $company, ?CustomerAsset $asset, ?Quote $quote = null): Quote
+    /**
+     * @param array<int, array{images?: \Symfony\Component\HttpFoundation\File\UploadedFile[]}> $itemImageFiles Indexado pela mesma posição de $dto->items
+     */
+    public function toEntity(QuoteInputDTO $dto, Company $company, ?CustomerAsset $asset, ?Quote $quote = null, array $itemImageFiles = []): Quote
     {
         $quote = $quote ?? new Quote();
 
@@ -45,19 +50,30 @@ class QuoteMapper
         $quote->setShippingValue($dto->shippingValue);
         $quote->setInternalNotes($dto->internalNotes);
 
-        // Limpa itens existentes para re-inserção (Update)
-        if ($quote->getId()) {
-            foreach ($quote->getQuoteItems() as $oldItem) {
-                $quote->removeQuoteItem($oldItem);
+        // Indexa os itens já persistidos por id, para casar com o DTO em vez de recriar tudo
+        // (recriar destruiria as imagens anexadas a cada edição do orçamento, via orphanRemoval)
+        $existingItemsById = [];
+        foreach ($quote->getQuoteItems() as $existingItem) {
+            if ($existingItem->getId()) {
+                $existingItemsById[$existingItem->getId()] = $existingItem;
             }
         }
 
-        foreach ($dto->items as $itemDto) {
-            $item = new QuoteItem();
+        $keptItemIds = [];
+
+        foreach ($dto->items as $index => $itemDto) {
+            if ($itemDto->id !== null && isset($existingItemsById[$itemDto->id])) {
+                $item = $existingItemsById[$itemDto->id];
+                $keptItemIds[] = $itemDto->id;
+            } else {
+                $item = new QuoteItem();
+                $quote->addQuoteItem($item);
+            }
+
             $item->setDescription($itemDto->description);
             $item->setQuantity($itemDto->quantity);
             $item->setUnitPrice($itemDto->unitPrice);
-            
+
             // Tratamento de Mão de Obra
             if ($itemDto->laborId > 0) {
                 // getReference cria um Proxy sem carregar do banco, apenas com o ID
@@ -72,8 +88,17 @@ class QuoteMapper
                 $item->setProduct($productProxy);
                 $item->setLabor(null);
             }
-            
-            $quote->addQuoteItem($item);
+
+            if (!empty($itemImageFiles[$index]['images'])) {
+                $this->quoteItemImageService->addImages($item, $company, $itemImageFiles[$index]['images']);
+            }
+        }
+
+        // Remove apenas os itens que o usuário de fato excluiu da lista (não vieram no DTO)
+        foreach ($existingItemsById as $id => $existingItem) {
+            if (!in_array($id, $keptItemIds, true)) {
+                $quote->removeQuoteItem($existingItem);
+            }
         }
 
         return $quote;
@@ -81,7 +106,9 @@ class QuoteMapper
 
     public function toOutputDTO(Quote $quote): QuoteOutputDTO
     {
-        $items = array_map(function (QuoteItem $item) {
+        $company = $quote->getCompany();
+
+        $items = array_map(function (QuoteItem $item) use ($company) {
             return new QuoteItemOutputDTO(
                 id: $item->getId(),
                 description: $item->getDescription(),
@@ -94,6 +121,7 @@ class QuoteMapper
                 productUnit: $item->getProduct()?->getUnit()->value,
                 productId: $item->getProduct()?->getId(),
                 productName: $item->getProduct()?->getName(),
+                images: $this->quoteItemImageService->formatImages($item, $company),
             );
         }, $quote->getQuoteItems()->toArray());
 

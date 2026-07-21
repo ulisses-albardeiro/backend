@@ -5,6 +5,8 @@ namespace App\Entity\Quote;
 use App\Entity\Labor\Labor;
 use App\Entity\Product\Product;
 use App\Repository\QuoteItemRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -38,6 +40,17 @@ class QuoteItem
 
     #[ORM\ManyToOne(inversedBy: 'quoteItems')]
     private ?Labor $labor = null;
+
+    /**
+     * @var Collection<int, QuoteItemImage>
+     */
+    #[ORM\OneToMany(mappedBy: 'quoteItem', targetEntity: QuoteItemImage::class, cascade: ['persist'], orphanRemoval: true)]
+    private Collection $images;
+
+    public function __construct()
+    {
+        $this->images = new ArrayCollection();
+    }
 
     public function getTotalPrice(): ?int
     {
@@ -124,6 +137,35 @@ class QuoteItem
     public function setLabor(?Labor $labor): static
     {
         $this->labor = $labor;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, QuoteItemImage>
+     */
+    public function getImages(): Collection
+    {
+        return $this->images;
+    }
+
+    public function addImage(QuoteItemImage $image): static
+    {
+        if (!$this->images->contains($image)) {
+            $this->images->add($image);
+            $image->setQuoteItem($this);
+        }
+
+        return $this;
+    }
+
+    public function removeImage(QuoteItemImage $image): static
+    {
+        if ($this->images->removeElement($image)) {
+            if ($image->getQuoteItem() === $this) {
+                $image->setQuoteItem(null);
+            }
+        }
 
         return $this;
     }

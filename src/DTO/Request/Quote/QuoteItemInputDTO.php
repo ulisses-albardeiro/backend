@@ -5,6 +5,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class QuoteItemInputDTO
 {
+    public ?int $id = null;
+
     #[Assert\NotBlank]
     public string $description;
 
@@ -17,8 +19,8 @@ class QuoteItemInputDTO
     public int $unitPrice;
 
     #[Assert\Positive]
-    public ?int $laborId;
+    public ?int $laborId = null;
 
     #[Assert\Positive]
-    public ?int $productId;
+    public ?int $productId = null;
 }

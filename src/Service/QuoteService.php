@@ -24,6 +24,7 @@ class QuoteService
         private CompanyMapper $companyMapper,
         private CustomerMapper $customerMapper,
         private CustomerAssetRepository $assetRepository,
+        private QuoteItemImageService $quoteItemImageService,
     ) {}
 
     public function listAllByCompany(Company $company): array
@@ -47,13 +48,13 @@ class QuoteService
         return $this->mapper->toOutputDTO($quote);
     }
 
-    public function create(QuoteInputDTO $dto, Company $company): QuoteOutputDTO
+    public function create(QuoteInputDTO $dto, Company $company, array $itemImageFiles = []): QuoteOutputDTO
     {
         $asset = $this->assetRepository->findOneBy([
             'id' => $dto->assetId,
             'company' => $company
         ]);
-        $quote = $this->mapper->toEntity($dto, $company, $asset);
+        $quote = $this->mapper->toEntity($dto, $company, $asset, null, $itemImageFiles);
 
         $quote->recalculateTotals();
 
@@ -63,16 +64,20 @@ class QuoteService
         return $this->mapper->toOutputDTO($quote);
     }
 
-    public function update(int $id, QuoteInputDTO $dto, Company $company): QuoteOutputDTO
+    public function update(int $id, QuoteInputDTO $dto, Company $company, array $itemImageFiles = []): QuoteOutputDTO
     {
         $quote = $this->repository->findByIdAndCompany($id, $company);
+
+        if (!$quote) {
+            throw new NotFoundHttpException('QUOTE_NOT_FOUND');
+        }
 
         $asset = $this->assetRepository->findOneBy([
             'id' => $dto->assetId,
             'company' => $company
         ]);
 
-        $this->mapper->toEntity($dto, $company, $asset, $quote);
+        $this->mapper->toEntity($dto, $company, $asset, $quote, $itemImageFiles);
 
         $quote->recalculateTotals();
 
@@ -107,6 +112,14 @@ class QuoteService
         $companyDto = $this->companyMapper->toOutputDTO($company, $logoBase64);
         $customerDto = $this->customerMapper->toOutputDTO($quoteEntity->getCustomer());
 
-        return new QuoteDocument($quoteDto, $companyDto, $customerDto);
+        $itemImagesSubDir = $this->quoteItemImageService->getSubDir($company);
+        $photosByItemId = [];
+        foreach ($quoteEntity->getQuoteItems() as $item) {
+            foreach ($item->getImages() as $image) {
+                $photosByItemId[$item->getId()][] = $this->fileService->getBase64($itemImagesSubDir, $image->getPath());
+            }
+        }
+
+        return new QuoteDocument($quoteDto, $companyDto, $customerDto, $photosByItemId);
     }
 }

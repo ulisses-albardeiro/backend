@@ -13,6 +13,7 @@ class QuoteDocument implements ExportableDocumentInterface
         private QuoteOutputDTO $quote,
         private CompanyOutputDTO $company,
         private CustomerOutputDTO $customer,
+        private array $photosByItemId = [],
         ) {}
 
     public function getTemplate(): string
@@ -26,6 +27,7 @@ class QuoteDocument implements ExportableDocumentInterface
             'quote' => $this->quote,
             'customer' => $this->customer,
             'company'  => $this->company,
+            'photosByItemId' => $this->photosByItemId,
         ];
     }
 
