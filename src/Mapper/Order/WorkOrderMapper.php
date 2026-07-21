@@ -12,17 +12,23 @@ use App\DTO\Request\Order\WorkOrderInputDTO;
 use App\DTO\Response\Order\WorkOrderOutputDTO;
 use App\DTO\Response\Order\WorkOrderItemOutputDTO;
 use App\Entity\Customer\CustomerAsset;
+use App\Entity\Quote\QuoteItem;
 use App\Repository\CustomerRepository;
+use App\Service\Order\WorkOrderItemImageService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class WorkOrderMapper
 {
     public function __construct(
         private CustomerRepository $customerRepository,
-        private EntityManagerInterface $em
+        private EntityManagerInterface $em,
+        private WorkOrderItemImageService $workOrderItemImageService
     ) {}
 
-    public function toEntity(WorkOrderInputDTO $dto, Company $company, ?CustomerAsset $customerAsset, ?WorkOrder $workOrder = null): WorkOrder
+    /**
+     * @param array<int, array{images?: \Symfony\Component\HttpFoundation\File\UploadedFile[]}> $itemImageFiles Indexado pela mesma posição de $dto->items
+     */
+    public function toEntity(WorkOrderInputDTO $dto, Company $company, ?CustomerAsset $customerAsset, ?WorkOrder $workOrder = null, array $itemImageFiles = []): WorkOrder
     {
         $workOrder = $workOrder ?? new WorkOrder();
 
@@ -60,23 +66,35 @@ class WorkOrderMapper
             $workOrder->setQuote($this->em->getReference(Quote::class, $dto->quoteId));
         }
 
-        if ($workOrder->getId()) {
-            foreach ($workOrder->getWorkOrderItems() as $oldItem) {
-                $workOrder->removeWorkOrderItem($oldItem);
+        // Indexa os itens já persistidos por id, para casar com o DTO em vez de recriar tudo
+        // (recriar destruiria as imagens anexadas a cada edição da OS, via orphanRemoval) —
+        // mesmo padrão de QuoteMapper::toEntity().
+        $existingItemsById = [];
+        foreach ($workOrder->getWorkOrderItems() as $existingItem) {
+            if ($existingItem->getId()) {
+                $existingItemsById[$existingItem->getId()] = $existingItem;
             }
         }
 
+        $keptItemIds = [];
         $totalOS = 0;
 
-        foreach ($dto->items as $itemDto) {
-            $item = new WorkOrderItem();
+        foreach ($dto->items as $index => $itemDto) {
+            if ($itemDto->id !== null && isset($existingItemsById[$itemDto->id])) {
+                $item = $existingItemsById[$itemDto->id];
+                $keptItemIds[] = $itemDto->id;
+            } else {
+                $item = new WorkOrderItem();
+                $workOrder->addWorkOrderItem($item);
+            }
+
             $item->setDescription($itemDto->description);
             $item->setQuantity($itemDto->quantity);
             $item->setUnitPrice($itemDto->unitPrice);
 
             $itemTotal = (int) round($itemDto->unitPrice * (float) $itemDto->quantity);
             $item->setTotalPrice($itemTotal);
-            
+
             $totalOS += $itemTotal;
 
             if ($itemDto->laborId > 0) {
@@ -87,7 +105,23 @@ class WorkOrderMapper
                 $item->setProduct($this->em->getReference(Product::class, $itemDto->productId));
             }
 
-            $workOrder->addWorkOrderItem($item);
+            if ($itemDto->sourceQuoteItemId) {
+                $sourceItem = $this->em->find(QuoteItem::class, $itemDto->sourceQuoteItemId);
+                if ($sourceItem && $sourceItem->getQuote()->getCompany()->getId() === $company->getId()) {
+                    $this->workOrderItemImageService->copyFromQuoteItem($item, $sourceItem);
+                }
+            }
+
+            if (!empty($itemImageFiles[$index]['images'])) {
+                $this->workOrderItemImageService->addImages($item, $company, $itemImageFiles[$index]['images']);
+            }
+        }
+
+        // Remove apenas os itens que o usuário de fato excluiu da lista (não vieram no DTO)
+        foreach ($existingItemsById as $id => $existingItem) {
+            if (!in_array($id, $keptItemIds, true)) {
+                $workOrder->removeWorkOrderItem($existingItem);
+            }
         }
 
         $workOrder->setTotalAmount($totalOS);
@@ -97,7 +131,9 @@ class WorkOrderMapper
 
     public function toOutputDTO(WorkOrder $workOrder): WorkOrderOutputDTO
     {
-        $items = array_map(function (WorkOrderItem $item) {
+        $company = $workOrder->getCompany();
+
+        $items = array_map(function (WorkOrderItem $item) use ($company) {
             return new WorkOrderItemOutputDTO(
                 id: $item->getId(),
                 description: $item->getDescription(),
@@ -109,7 +145,8 @@ class WorkOrderMapper
                 productUnit: $item->getProduct()?->getUnit()->value,
                 laborId: $item->getLabor()?->getId(),
                 laborName: $item->getLabor()?->getName(),
-                laborUnit: $item->getLabor()?->getUnit()->value
+                laborUnit: $item->getLabor()?->getUnit()->value,
+                images: $this->workOrderItemImageService->formatImages($item, $company),
             );
         }, $workOrder->getWorkOrderItems()->toArray());
 

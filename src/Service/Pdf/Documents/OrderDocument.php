@@ -14,6 +14,7 @@ class OrderDocument implements ExportableDocumentInterface
         private WorkOrderOutputDTO $order,
         private CompanyOutputDTO $company,
         private CustomerOutputDTO $customer,
+        private array $photosByItemId = [],
         ) {}
 
     public function getTemplate(): string
@@ -27,6 +28,7 @@ class OrderDocument implements ExportableDocumentInterface
             'order' => $this->order,
             'customer' => $this->customer,
             'company'  => $this->company,
+            'photosByItemId' => $this->photosByItemId,
         ];
     }
 

@@ -2,7 +2,9 @@
 
 Documentação completa da feature de Orçamentos do **Meus Orçamentos**. Leia isto antes de mexer em `Quote`, `QuoteItem`, `QuoteItemImage`, `QuoteMapper`, `QuoteService`, `QuoteController`, `QuoteItemImageController`/`QuoteItemImageService`, DTOs de Quote, ou na geração do PDF do orçamento.
 
-**Fora de escopo deste documento**: geração de Ordem de Serviço (OS) a partir de um orçamento. `Quote::$workOrders` existe só como relação inversa (uma OS pode referenciar opcionalmente um orçamento via FK), mas toda a cópia de dados orçamento→OS acontece no **frontend** (`front/src/pages/panel/Order/Form.jsx`, função `importQuoteData`) — não há service nem endpoint de conversão no backend. Não documentado aqui por decisão explícita (escopo restrito a Orçamentos).
+**Fora de escopo deste documento**: geração de Ordem de Serviço (OS) a partir de um orçamento. `Quote::$workOrders` existe só como relação inversa (uma OS pode referenciar opcionalmente um orçamento via FK), mas toda a cópia de dados orçamento→OS acontece no **frontend** (`front/src/pages/panel/Order/Form.jsx`, função `importQuoteData`) — não há service nem endpoint de conversão no backend. Não documentado aqui por decisão explícita (escopo restrito a Orçamentos) — ver [`docs/WORK_ORDER.md`](WORK_ORDER.md) para o módulo de OS.
+
+**Exceção pontual**: o subdiretório de fotos por item (`docs_images`, ver seção "Fotos por item" abaixo) passou a ser **compartilhado** entre `QuoteItemImage` e `WorkOrderItemImage` — uma OS criada a partir de um orçamento copia a referência das fotos sem novo upload. Isso é tratado com mais detalhe em `WORK_ORDER.md`, mas qualquer mudança no `getSubDir()` de `QuoteItemImageService` afeta os dois módulos.
 
 ## Modelo de dados
 
@@ -149,7 +151,9 @@ Feature que permite anexar múltiplas fotos a um item de orçamento (documentar 
 
 ### Onde o arquivo fica salvo
 
-`company_[md5(company->getCreatedAt()->format('U'))]/quote_items/<nome-gerado>` — mesmo padrão já usado por `Company::getSubDir()` (logo) e `ProductService::getSubDir()` (produtos), só troca o sufixo (`QuoteItemImageService::getSubDir()`). **Decisão explícita do usuário: não trocar esse padrão por algo baseado em ID da empresa** mesmo sendo mais simples — o hash já está em produção, trocar exigiria migrar arquivos existentes.
+`company_[md5(company->getCreatedAt()->format('U'))]/docs_images/<nome-gerado>` — mesmo padrão já usado por `Company::getSubDir()` (logo) e `ProductService::getSubDir()` (produtos), só troca o sufixo (`QuoteItemImageService::getSubDir()`). **Decisão explícita do usuário: não trocar o esquema de hash por algo baseado em ID da empresa** mesmo sendo mais simples — o hash já está em produção, trocar exigiria migrar arquivos existentes.
+
+**O sufixo do subdiretório foi renomeado de `quote_items` para `docs_images`** para ser compartilhado com `WorkOrderItemImageService` (fotos de OS) — ver `docs/WORK_ORDER.md`. Sem migração de arquivos físicos porque não havia dado real em produção nesse caminho no momento da mudança.
 
 **Achado, não resolvido de propósito**: esse hash se mostrou instável em pelo menos um teste manual nessa sessão — `format('U')` do mesmo `createdAt` retornou dois valores diferentes (offset de exatamente 3h, o de America/Sao_Paulo) em momentos diferentes do mesmo processo PHP de longa duração (`symfony serve`). Causa raiz não isolada. Efeito prático se acontecer de novo: a imagem existe no disco mas o app procura na pasta errada — aparece vazia, **sem nenhum erro** (`FileService::getBase64()`/`getPublicUrl()` retornam `''` silenciosamente para arquivo não encontrado). Se voltar a acontecer, comece verificando `date_default_timezone_get()` ao longo do request antes de suspeitar de código novo.
 
