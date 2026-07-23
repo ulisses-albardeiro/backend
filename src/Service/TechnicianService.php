@@ -90,16 +90,22 @@ class TechnicianService
         return $this->mapper->toOutputDTO($technician, $signatureUrl);
     }
 
-    public function getCompanySignatureBase64(Company $company): ?string
+    /**
+     * @return array{name: ?string, base64: ?string}
+     */
+    public function getCompanySignatureData(Company $company): array
     {
         $technician = $this->repository->findOneBy(['company' => $company]);
         $signature = $technician?->getSignature();
 
-        if (!$signature || !$signature->getFileName()) {
-            return null;
+        if (!$technician || !$signature || !$signature->getFileName()) {
+            return ['name' => null, 'base64' => null];
         }
 
-        return $this->fileService->getBase64($this->getSignatureSubDir($company), $signature->getFileName());
+        return [
+            'name' => $technician->getName(),
+            'base64' => $this->fileService->getBase64($this->getSignatureSubDir($company), $signature->getFileName()),
+        ];
     }
 
     private function getSignatureSubDir(Company $company): string

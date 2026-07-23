@@ -274,7 +274,7 @@
                         {% if signature %}
                             <img src="{{ signature }}" style="max-height: 50px;"><br>
                         {% endif %}
-                        Assinatura do Técnico
+                        {{ signature ? signatureName : 'Assinatura do Técnico' }}
                     </td>
                     <td style="width: 10%;"></td>
                     <td style="width: 45%; border-top: 1px solid #333; text-align: center; padding-top: 5px;">

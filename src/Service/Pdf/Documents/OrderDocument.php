@@ -16,6 +16,7 @@ class OrderDocument implements ExportableDocumentInterface
         private CustomerOutputDTO $customer,
         private array $photosByItemId = [],
         private ?string $signatureBase64 = null,
+        private ?string $signatureName = null,
         ) {}
 
     public function getTemplate(): string
@@ -31,6 +32,7 @@ class OrderDocument implements ExportableDocumentInterface
             'company'  => $this->company,
             'photosByItemId' => $this->photosByItemId,
             'signature' => $this->signatureBase64,
+            'signatureName' => $this->signatureName,
         ];
     }
 
