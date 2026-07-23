@@ -165,6 +165,12 @@ class Company
     #[ORM\OneToMany(targetEntity: WorkOrder::class, mappedBy: 'company', orphanRemoval: true)]
     private Collection $workOrders;
 
+    /**
+     * @var Collection<int, Technician>
+     */
+    #[ORM\OneToMany(targetEntity: Technician::class, mappedBy: 'company', orphanRemoval: true)]
+    private Collection $technicians;
+
     public function __construct()
     {
         $this->customers = new ArrayCollection();
@@ -181,6 +187,7 @@ class Company
         $this->laborCategories = new ArrayCollection();
         $this->labors = new ArrayCollection();
         $this->workOrders = new ArrayCollection();
+        $this->technicians = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -560,6 +567,35 @@ class Company
             // set the owning side to null (unless already changed)
             if ($receipt->getCompany() === $this) {
                 $receipt->setCompany(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Technician>
+     */
+    public function getTechnicians(): Collection
+    {
+        return $this->technicians;
+    }
+
+    public function addTechnician(Technician $technician): static
+    {
+        if (!$this->technicians->contains($technician)) {
+            $this->technicians->add($technician);
+            $technician->setCompany($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTechnician(Technician $technician): static
+    {
+        if ($this->technicians->removeElement($technician)) {
+            if ($technician->getCompany() === $this) {
+                $technician->setCompany(null);
             }
         }
 
