@@ -85,5 +85,6 @@ Cada feature relevante ganha um `.md` próprio em `docs/`, escrito para outra se
 - [`docs/SUBSCRIPTION.md`](docs/SUBSCRIPTION.md) — assinaturas pagas via Asaas (planos, trial, webhook, bloqueio de acesso).
 - [`docs/QUOTE.md`](docs/QUOTE.md) — orçamentos (modelo de dados, PDF, fotos por item).
 - [`docs/WORK_ORDER.md`](docs/WORK_ORDER.md) — ordem de serviço (modelo de dados, PDF, fotos por item, cópia de fotos a partir de um orçamento).
+- [`docs/SIGNATURE.md`](docs/SIGNATURE.md) — assinatura digital (cadastro de `Technician`/`Signature`, integração como carimbo opcional em Recibo/OS/Orçamento via `includeSignature`).
 
 Nem todo módulo tem doc ainda (ex.: Product/Stock, Labor, Transaction/Category, Customer) — sendo adicionados aos poucos. Ao fazer uma mudança grande num módulo sem doc, considere criar um.

@@ -26,6 +26,7 @@ class ReceiptService
         private CustomerMapper $customerMapper,
         private QuoteRepository $quoteRepository,
         private CustomerRepository $customerRepository,
+        private TechnicianService $technicianService,
     ) {}
 
     public function listAllByCompany(Company $company): array
@@ -128,10 +129,13 @@ class ReceiptService
         $receiptDto = $this->mapper->toOutputDTO($receiptEntity);
         
         $logoBase64 = $this->fileService->getBase64($company->getSubDir('/logo'), $company->getLogo());
+        $signatureBase64 = $receiptEntity->isIncludeSignature()
+            ? $this->technicianService->getCompanySignatureBase64($company)
+            : null;
 
         $companyDto = $this->companyMapper->toOutputDTO($company, $logoBase64);
         $customerDto = $this->customerMapper->toOutputDTO($receiptEntity->getCustomer());
 
-        return new ReceiptDocument($receiptDto, $companyDto, $customerDto);
+        return new ReceiptDocument($receiptDto, $companyDto, $customerDto, $signatureBase64);
     }
 }

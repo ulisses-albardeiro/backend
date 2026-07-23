@@ -31,5 +31,7 @@ readonly class ReceiptInputDTO
         public ?int $quoteId = null,
 
         public ?string $notes = null,
+
+        public bool $includeSignature = true,
     ) {}
 }

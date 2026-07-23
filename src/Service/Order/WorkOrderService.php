@@ -18,6 +18,7 @@ use App\Repository\CategoryRepository;
 use App\Repository\Customer\CustomerAssetRepository;
 use App\Repository\Order\WorkOrderRepository;
 use App\Service\FileService;
+use App\Service\TechnicianService;
 use App\Service\Pdf\Documents\OrderDocument;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -34,7 +35,8 @@ class WorkOrderService
         private CustomerMapper $customerMapper,
         private FileService $fileService,
         private CustomerAssetRepository $customerAssetRepository,
-        private WorkOrderItemImageService $workOrderItemImageService
+        private WorkOrderItemImageService $workOrderItemImageService,
+        private TechnicianService $technicianService,
     ) {}
 
     public function create(WorkOrderInputDTO $dto, Company $company, array $itemImageFiles = []): WorkOrderOutputDTO
@@ -147,6 +149,9 @@ class WorkOrderService
 
         $quoteDto = $this->mapper->toOutputDTO($quoteEntity);
         $logoBase64 = $this->fileService->getBase64($company->getSubDir('/logo'), $company->getLogo());
+        $signatureBase64 = $quoteEntity->isIncludeSignature()
+            ? $this->technicianService->getCompanySignatureBase64($company)
+            : null;
 
         $companyDto = $this->companyMapper->toOutputDTO($company, $logoBase64);
         $customerDto = $this->customerMapper->toOutputDTO($quoteEntity->getCustomer());
@@ -159,6 +164,6 @@ class WorkOrderService
             }
         }
 
-        return new OrderDocument($quoteDto, $companyDto, $customerDto, $photosByItemId);
+        return new OrderDocument($quoteDto, $companyDto, $customerDto, $photosByItemId, $signatureBase64);
     }
 }

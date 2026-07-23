@@ -49,7 +49,8 @@ class WorkOrderMapper
         $workOrder->setEquipment($dto->equipment);
         $workOrder->setStartDate($dto->startDate);
         $workOrder->setEndDate($dto->endDate);
-        
+        $workOrder->setIncludeSignature($dto->includeSignature);
+
         if (!$workOrder->getId()) {
             $year = (new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')))->format('dmY');
             $uniquePart = strtoupper(substr(uniqid(), -4));
@@ -167,6 +168,7 @@ class WorkOrderMapper
             assetName: $workOrder->getAsset()?->getName(),
             startDate: $workOrder->getStartDate(),
             endDate: $workOrder->getEndDate(),
+            includeSignature: $workOrder->isIncludeSignature(),
             createdAt: $workOrder->getCreatedAt(),
             updatedAt: $workOrder->getUpdatedAt(),
             totalAmount: $workOrder->getTotalAmount(),

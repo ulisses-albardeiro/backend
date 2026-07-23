@@ -23,6 +23,7 @@ class ReceiptMapper
         $receipt->setCompany($company);
         $receipt->setQuote($quote);
         $receipt->setNotes($dto->notes);
+        $receipt->setIncludeSignature($dto->includeSignature);
 
         return $receipt;
     }
@@ -43,6 +44,7 @@ class ReceiptMapper
             customerId: $receipt->getCustomer()->getId(),
             customerName: $receipt->getCustomer()->getName(),
             notes: $receipt->getNotes(),
+            includeSignature: $receipt->isIncludeSignature(),
             createdAt: $receipt->getCreatedAt(),
             updatedAt: $receipt->getUpdatedAt()
         );

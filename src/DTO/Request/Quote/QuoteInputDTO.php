@@ -25,6 +25,8 @@ class QuoteInputDTO
     public ?string $notes = null;
     public ?int $assetId = null;
 
+    public bool $includeSignature = true;
+
     #[Assert\NotBlank(message: "O campo Status é obrigatório")]
     public QuoteStatus $status;
 

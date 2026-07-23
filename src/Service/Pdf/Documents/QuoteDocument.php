@@ -14,6 +14,7 @@ class QuoteDocument implements ExportableDocumentInterface
         private CompanyOutputDTO $company,
         private CustomerOutputDTO $customer,
         private array $photosByItemId = [],
+        private ?string $signatureBase64 = null,
         ) {}
 
     public function getTemplate(): string
@@ -28,6 +29,7 @@ class QuoteDocument implements ExportableDocumentInterface
             'customer' => $this->customer,
             'company'  => $this->company,
             'photosByItemId' => $this->photosByItemId,
+            'signature' => $this->signatureBase64,
         ];
     }
 

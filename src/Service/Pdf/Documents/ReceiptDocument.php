@@ -13,6 +13,7 @@ class ReceiptDocument implements ExportableDocumentInterface
         private ReceiptOutputDTO $receipt,
         private CompanyOutputDTO $company,
         private CustomerOutputDTO $customer,
+        private ?string $signatureBase64 = null,
     ) {}
 
     public function getTemplate(): string
@@ -23,9 +24,10 @@ class ReceiptDocument implements ExportableDocumentInterface
     public function getData(): array
     {
         return [
-            'receipt'  => $this->receipt,
-            'customer' => $this->customer,
-            'company'  => $this->company,
+            'receipt'   => $this->receipt,
+            'customer'  => $this->customer,
+            'company'   => $this->company,
+            'signature' => $this->signatureBase64,
         ];
     }
 
