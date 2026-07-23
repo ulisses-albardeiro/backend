@@ -129,13 +129,13 @@ class ReceiptService
         $receiptDto = $this->mapper->toOutputDTO($receiptEntity);
         
         $logoBase64 = $this->fileService->getBase64($company->getSubDir('/logo'), $company->getLogo());
-        $signatureBase64 = $receiptEntity->isIncludeSignature()
-            ? $this->technicianService->getCompanySignatureBase64($company)
-            : null;
+        $signatureData = $receiptEntity->isIncludeSignature()
+            ? $this->technicianService->getCompanySignatureData($company)
+            : ['name' => null, 'base64' => null];
 
         $companyDto = $this->companyMapper->toOutputDTO($company, $logoBase64);
         $customerDto = $this->customerMapper->toOutputDTO($receiptEntity->getCustomer());
 
-        return new ReceiptDocument($receiptDto, $companyDto, $customerDto, $signatureBase64);
+        return new ReceiptDocument($receiptDto, $companyDto, $customerDto, $signatureData['base64'], $signatureData['name']);
     }
 }

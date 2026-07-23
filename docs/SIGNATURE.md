@@ -59,33 +59,45 @@ private bool $includeSignature = false;
 
 Default do DTO de request é **`true`** (`ReceiptInputDTO`/`WorkOrderInputDTO`/`QuoteInputDTO::$includeSignature = true`) — o requisito é "ligado por padrão quando há assinatura cadastrada"; quem decide não mandar `true` quando não há assinatura é o frontend (switch desabilitado, ver abaixo), e o backend reforça de qualquer forma (ver próximo parágrafo).
 
-### Resolver "a assinatura da empresa" — `TechnicianService::getCompanySignatureBase64()`
+### Resolver "a assinatura da empresa" — `TechnicianService::getCompanySignatureData()`
 
-Método reutilizado pelos três `Service`s (`ReceiptService`, `WorkOrderService`, `QuoteService`, todos com `TechnicianService` injetado):
+Método reutilizado pelos três `Service`s (`ReceiptService`, `WorkOrderService`, `QuoteService`, todos com `TechnicianService` injetado). Retorna nome do técnico **e** imagem juntos, já que o template precisa dos dois:
 
 ```php
-public function getCompanySignatureBase64(Company $company): ?string
+/**
+ * @return array{name: ?string, base64: ?string}
+ */
+public function getCompanySignatureData(Company $company): array
 {
     $technician = $this->repository->findOneBy(['company' => $company]);
     $signature = $technician?->getSignature();
 
-    if (!$signature || !$signature->getFileName()) {
-        return null;
+    if (!$technician || !$signature || !$signature->getFileName()) {
+        return ['name' => null, 'base64' => null];
     }
 
-    return $this->fileService->getBase64($this->getSignatureSubDir($company), $signature->getFileName());
+    return [
+        'name' => $technician->getName(),
+        'base64' => $this->fileService->getBase64($this->getSignatureSubDir($company), $signature->getFileName()),
+    ];
 }
 ```
 
 Cada `Service::get{Receipt,Order,Quote}Document()` chama isso condicionalmente:
 ```php
-$signatureBase64 = $entity->isIncludeSignature()
-    ? $this->technicianService->getCompanySignatureBase64($company)
-    : null;
+$signatureData = $entity->isIncludeSignature()
+    ? $this->technicianService->getCompanySignatureData($company)
+    : ['name' => null, 'base64' => null];
 ```
-Ou seja: mesmo com `includeSignature = true`, se a empresa não tiver técnico/assinatura cadastrada (ou o arquivo tiver sido removido depois), o método retorna `null` e o template simplesmente não desenha nada — dupla proteção, não depende só do frontend desabilitar o switch.
+Ou seja: mesmo com `includeSignature = true`, se a empresa não tiver técnico/assinatura cadastrada (ou o arquivo tiver sido removido depois), o método retorna `null`/`null` e o template cai no fallback — dupla proteção, não depende só do frontend desabilitar o switch.
 
-`*Document` (`ReceiptDocument`/`OrderDocument`/`QuoteDocument`) ganharam um parâmetro `?string $signatureBase64` e uma chave `'signature'` no array de `getData()`.
+`*Document` (`ReceiptDocument`/`OrderDocument`/`QuoteDocument`) ganharam dois parâmetros — `?string $signatureBase64` e `?string $signatureName` — e as chaves `'signature'`/`'signatureName'` no array de `getData()`.
+
+**Nome do técnico abaixo da assinatura, com fallback genérico**: quando há imagem, o nome do técnico aparece embaixo (não mais o nome da empresa, que era o texto fixo original); quando não há (`signature` é `null`, seja por `includeSignature = false` ou por falta de assinatura cadastrada), o texto cai para um rótulo genérico em vez de qualquer nome:
+```twig
+{{ signature ? signatureName : 'Assinatura' }}
+```
+Em `order.html.twig`, a coluna do Técnico usa o mesmo padrão mas com fallback `'Assinatura do Técnico'` (em vez de só `'Assinatura'`) pra manter o paralelismo visual com a coluna ao lado, que é sempre `'Assinatura do Cliente'` (estática, sem imagem — fora de escopo).
 
 ### Templates Twig
 

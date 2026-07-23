@@ -312,7 +312,7 @@
 				<img src="{{ signature }}" style="max-height: 60px; margin-bottom: 4px;"><br>
 			{% endif %}
 			<div class="signature-line"></div>
-			<strong>{{ company.tradingName ?: company.name }}</strong><br>
+			<strong>{{ signature ? signatureName : 'Assinatura' }}</strong><br>
 			<span style="font-size: 9px; color: #666;">Documento emitido eletronicamente</span>
 		</div>
 

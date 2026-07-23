@@ -109,9 +109,9 @@ class QuoteService
 
         $quoteDto = $this->mapper->toOutputDTO($quoteEntity);
         $logoBase64 = $this->fileService->getBase64($company->getSubDir('/logo'), $company->getLogo());
-        $signatureBase64 = $quoteEntity->isIncludeSignature()
-            ? $this->technicianService->getCompanySignatureBase64($company)
-            : null;
+        $signatureData = $quoteEntity->isIncludeSignature()
+            ? $this->technicianService->getCompanySignatureData($company)
+            : ['name' => null, 'base64' => null];
 
         $companyDto = $this->companyMapper->toOutputDTO($company, $logoBase64);
         $customerDto = $this->customerMapper->toOutputDTO($quoteEntity->getCustomer());
@@ -124,6 +124,6 @@ class QuoteService
             }
         }
 
-        return new QuoteDocument($quoteDto, $companyDto, $customerDto, $photosByItemId, $signatureBase64);
+        return new QuoteDocument($quoteDto, $companyDto, $customerDto, $photosByItemId, $signatureData['base64'], $signatureData['name']);
     }
 }
