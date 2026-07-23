@@ -30,6 +30,7 @@ readonly class QuoteOutputDTO
         public ?string $internalNotes,
         public ?int $assetId,
         public ?string $assetName,
+        public bool $includeSignature,
         public array $items,
     ) {}
 }

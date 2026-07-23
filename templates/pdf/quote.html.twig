@@ -112,6 +112,15 @@
 				border-top: 1px solid #eee;
 				padding-top: 5px;
 			}
+			.signature-area {
+				margin-top: 50px;
+				text-align: center;
+			}
+			.signature-line {
+				width: 250px;
+				border-top: 1px solid #333;
+				margin: 0 auto 5px auto;
+			}
 		</style>
 	</head>
 	<body>
@@ -297,6 +306,15 @@
 				</div>
 			</div>
 		{% endif %}
+
+		<div class="signature-area">
+			{% if signature %}
+				<img src="{{ signature }}" style="max-height: 60px; margin-bottom: 4px;"><br>
+			{% endif %}
+			<div class="signature-line"></div>
+			<strong>{{ company.tradingName ?: company.name }}</strong><br>
+			<span style="font-size: 9px; color: #666;">Documento emitido eletronicamente</span>
+		</div>
 
 		<div class="footer">
 			{{ company.tradingName ?: company.name }}

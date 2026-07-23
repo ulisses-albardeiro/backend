@@ -36,7 +36,9 @@ class WorkOrderInputDTO
 
     public ?DateTimeImmutable $endDate = null;
 
-    /** 
+    public bool $includeSignature = true;
+
+    /**
      * @var WorkOrderItemInputDTO[] 
      */
     #[Assert\Valid]

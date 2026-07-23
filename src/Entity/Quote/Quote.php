@@ -64,6 +64,9 @@ class Quote
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $internalNotes = null;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $includeSignature = false;
+
     /**
      * @var Collection<int, QuoteItem>
      */
@@ -266,6 +269,18 @@ class Quote
     public function setInternalNotes(?string $internalNotes): static
     {
         $this->internalNotes = $internalNotes;
+
+        return $this;
+    }
+
+    public function isIncludeSignature(): bool
+    {
+        return $this->includeSignature;
+    }
+
+    public function setIncludeSignature(bool $includeSignature): static
+    {
+        $this->includeSignature = $includeSignature;
 
         return $this;
     }

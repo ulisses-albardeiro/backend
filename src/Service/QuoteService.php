@@ -25,6 +25,7 @@ class QuoteService
         private CustomerMapper $customerMapper,
         private CustomerAssetRepository $assetRepository,
         private QuoteItemImageService $quoteItemImageService,
+        private TechnicianService $technicianService,
     ) {}
 
     public function listAllByCompany(Company $company): array
@@ -108,6 +109,9 @@ class QuoteService
 
         $quoteDto = $this->mapper->toOutputDTO($quoteEntity);
         $logoBase64 = $this->fileService->getBase64($company->getSubDir('/logo'), $company->getLogo());
+        $signatureBase64 = $quoteEntity->isIncludeSignature()
+            ? $this->technicianService->getCompanySignatureBase64($company)
+            : null;
 
         $companyDto = $this->companyMapper->toOutputDTO($company, $logoBase64);
         $customerDto = $this->customerMapper->toOutputDTO($quoteEntity->getCustomer());
@@ -120,6 +124,6 @@ class QuoteService
             }
         }
 
-        return new QuoteDocument($quoteDto, $companyDto, $customerDto, $photosByItemId);
+        return new QuoteDocument($quoteDto, $companyDto, $customerDto, $photosByItemId, $signatureBase64);
     }
 }

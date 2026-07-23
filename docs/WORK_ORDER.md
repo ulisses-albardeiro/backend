@@ -90,6 +90,10 @@ O item ainda pode receber upload de foto nova no mesmo request (`itemImageFiles[
 
 `WorkOrderService::getOrderDocument()` monta `photosByItemId` (base64 via `FileService::getBase64()`, usando `WorkOrderItemImageService::getSubDir()`), passado pro `OrderDocument` e renderizado em `templates/pdf/order.html.twig` — mesma estrutura (`.item-photo-box`, caixa fixa 150×80) copiada de `quote.html.twig`.
 
+## Assinatura digital (`includeSignature`)
+
+`WorkOrder::$includeSignature` (bool, persistido) controla se a assinatura da empresa é carimbada no bloco "Assinatura do Técnico" já existente no template (a "Assinatura do Cliente" continua sem imagem, fora de escopo). Ver [`docs/SIGNATURE.md`](SIGNATURE.md) para o modelo completo (`Technician`/`Signature`, resolução via `TechnicianService::getCompanySignatureBase64()`, e o achado sobre `FormData.append` convertendo booleano em string — `Order/Form.jsx` manda `'1'`/`'0'` explicitamente no caminho multipart, usado quando há foto nova de item).
+
 ## O que falta / observações
 
 - Mesma limpeza de arquivo físico órfão pendente do lado de Quote (linha do banco removida, arquivo permanece — decisão deliberada, não é bug).

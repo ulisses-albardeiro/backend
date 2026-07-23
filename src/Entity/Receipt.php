@@ -50,6 +50,9 @@ class Receipt
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $includeSignature = false;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -199,6 +202,18 @@ class Receipt
     public function setNotes(?string $notes): static
     {
         $this->notes = $notes;
+
+        return $this;
+    }
+
+    public function isIncludeSignature(): bool
+    {
+        return $this->includeSignature;
+    }
+
+    public function setIncludeSignature(bool $includeSignature): static
+    {
+        $this->includeSignature = $includeSignature;
 
         return $this;
     }

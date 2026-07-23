@@ -137,7 +137,11 @@ Todos exigem `IS_AUTHENTICATED_FULLY`; escopo por empresa é sempre via `$user->
 
 `GET /api/quote/{id}/pdf` → `QuoteController::downloadPdf()` → `QuoteService::getQuoteDocument()` monta um `QuoteDocument` (`src/Service/Pdf/Documents/QuoteDocument.php`) com o `QuoteOutputDTO`, `CompanyOutputDTO` (logo em base64 via `FileService::getBase64()`) e `CustomerOutputDTO` → `PdfGeneratorService::generate()` renderiza `templates/pdf/quote.html.twig` via Twig e converte pra PDF com **dompdf**.
 
-Seções do template: cabeçalho (logo + dados da empresa + status), dados do cliente/endereço, bem associado (se houver `assetName`), descrição/objetivo (se houver), tabela de itens, seção de fotos (ver abaixo), totais (subtotal/desconto/frete/total), observações, rodapé com validade.
+Seções do template: cabeçalho (logo + dados da empresa + status), dados do cliente/endereço, bem associado (se houver `assetName`), descrição/objetivo (se houver), tabela de itens, seção de fotos (ver abaixo), totais (subtotal/desconto/frete/total), observações, bloco de assinatura (ver abaixo), rodapé com validade.
+
+### Assinatura digital (`includeSignature`)
+
+`Quote::$includeSignature` (bool, persistido) controla se a assinatura da empresa é carimbada no PDF — ver [`docs/SIGNATURE.md`](SIGNATURE.md) para o modelo completo (`Technician`/`Signature`, `TechnicianService::getCompanySignatureBase64()`, decisão de manter o campo persistido em vez de passado só na hora do download). `quote.html.twig` não tinha nenhum bloco de assinatura antes desta feature — foi adicionado do zero, mesmo CSS/layout usado em `receipt.html.twig`.
 
 ## Fotos por item (`QuoteItemImage`)
 

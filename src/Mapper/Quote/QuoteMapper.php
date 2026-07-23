@@ -49,6 +49,7 @@ class QuoteMapper
         $quote->setDiscountValue($dto->discountValue);
         $quote->setShippingValue($dto->shippingValue);
         $quote->setInternalNotes($dto->internalNotes);
+        $quote->setIncludeSignature($dto->includeSignature);
 
         // Indexa os itens já persistidos por id, para casar com o DTO em vez de recriar tudo
         // (recriar destruiria as imagens anexadas a cada edição do orçamento, via orphanRemoval)
@@ -146,6 +147,7 @@ class QuoteMapper
             internalNotes: $quote->getInternalNotes(),
             assetId: $quote->getAsset()?->getId(),
             assetName: $quote->getAsset()?->getName(),
+            includeSignature: $quote->isIncludeSignature(),
             items: $items
         );
     }

@@ -21,6 +21,7 @@ readonly class ReceiptOutputDTO
         public int $customerId,
         public string $customerName,
         public ?string $notes,
+        public bool $includeSignature,
         public \DateTimeImmutable $createdAt,
         public ?\DateTimeImmutable $updatedAt,
     ) {}

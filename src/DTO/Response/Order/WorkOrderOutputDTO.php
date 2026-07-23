@@ -26,6 +26,7 @@ readonly class WorkOrderOutputDTO
         public ?string $assetName,
         public ?DateTimeImmutable $startDate,
         public ?DateTimeImmutable $endDate,
+        public bool $includeSignature,
         public DateTimeImmutable $createdAt,
         public ?DateTimeImmutable $updatedAt,
         public int $totalAmount,

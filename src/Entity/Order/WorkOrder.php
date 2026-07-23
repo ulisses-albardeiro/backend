@@ -67,6 +67,9 @@ class WorkOrder
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $equipment = null;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $includeSignature = false;
+
     /**
      * @var Collection<int, WorkOrderItem>
      */
@@ -253,6 +256,18 @@ class WorkOrder
     public function setEquipment(?string $equipment): static
     {
         $this->equipment = $equipment;
+
+        return $this;
+    }
+
+    public function isIncludeSignature(): bool
+    {
+        return $this->includeSignature;
+    }
+
+    public function setIncludeSignature(bool $includeSignature): static
+    {
+        $this->includeSignature = $includeSignature;
 
         return $this;
     }
